@@ -8,7 +8,8 @@ const { createJWToken, verifyJWTToken } = require("../auth.js");
 const saltRounds = 10;
 
 mongoose.connect(
-  "mongodb+srv://admin:admin@omcq-dfqf7.gcp.mongodb.net/omcq?retryWrites=true&w=majority",
+  // "mongodb+srv://admin:admin@omcq-dfqf7.gcp.mongodb.net/omcq?retryWrites=true&w=majority",
+  "mongodb://admin:admin123@ds137008.mlab.com:37008/mcq",
   { useNewUrlParser: true }
 );
 
