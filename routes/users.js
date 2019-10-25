@@ -3,6 +3,7 @@ var router = express.Router();
 const mongoose = require("mongoose");
 const UserModel = require("../schema/UserModel");
 const bcrypt = require("bcrypt");
+const http = require('http');
 const { createJWToken, verifyJWTToken } = require("../auth.js");
 const saltRounds = 10;
 
@@ -80,6 +81,23 @@ router.get("/u", (req, res, next) => {
   );
 })
 
+router.get("/ip", (req, res, next) => {
+  var options = {
+    host: 'ipv4bot.whatismyipaddress.com',
+    port: 80,
+    path: '/'
+  };
+  http.get(options, function (r) {
+    r.on("data", function (chunk) {
+      str = "IP: " + chunk
+      console.log(str);
+      return res.json({ "ip": str })
+    });
+  }).on('error', function (e) {
+    console.log("error: " + e.message);
+  });
+}
+);
 
 router.get("/users", function (req, res, next) {
   verifyJWTToken(req.header("Authorization"))
