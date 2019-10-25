@@ -17,18 +17,15 @@ function createJWToken(details, maxAge) {
     if (typeof details !== 'object') {
         details = {}
     }
-
     if (!maxAge || typeof maxAge !== 'number') {
-        maxAge = 3600
+        maxAge = 43200
     }
-
     let token = jwt.sign(details,
         "ititan",
         {
             expiresIn: maxAge,
             algorithm: 'HS256'
         })
-
     return token
 }
 

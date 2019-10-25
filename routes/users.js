@@ -2,17 +2,16 @@ var express = require("express");
 var router = express.Router();
 const mongoose = require("mongoose");
 const UserModel = require("../schema/UserModel");
-const ServiceModel = require("../schema/ServiceModel");
 const bcrypt = require("bcrypt");
 const { createJWToken, verifyJWTToken } = require("../auth.js");
 const saltRounds = 10;
 
 mongoose.connect(
-  "mongodb://servicy:servicy123@ds151416.mlab.com:51416/servicy",
+  "mongodb+srv://admin:admin@omcq-dfqf7.gcp.mongodb.net/omcq?retryWrites=true&w=majority",
   { useNewUrlParser: true }
 );
 
-router.delete("/users/:id", function(req, res, next) {
+router.delete("/users/:id", function (req, res, next) {
   verifyJWTToken(req.header("Authorization")).then(
     payload => {
       userId = req.param("id");
@@ -46,13 +45,6 @@ router.delete("/users/:id", function(req, res, next) {
               data: userId
             });
           } else {
-            ServiceModel.remove({ provider_id: userId }, err => {
-              if (err)
-                return res.json({
-                  success: false,
-                  message: "Some error happen " + err
-                });
-            });
             UserModel.remove({ _id: userId }, err => {
               if (err)
                 return res.json({
@@ -78,7 +70,18 @@ router.delete("/users/:id", function(req, res, next) {
   );
 });
 
-router.get("/users", function(req, res, next) {
+router.get("/u", (req, res, next) => {
+  UserModel.find((err, data) => {
+    return res.json({
+      data: data
+    })
+  }
+
+  );
+})
+
+
+router.get("/users", function (req, res, next) {
   verifyJWTToken(req.header("Authorization"))
     .then(payload => {
       if (payload.role != "admin")
@@ -181,7 +184,7 @@ router.put("/users/:id", (req, res) => {
     });
 });
 
-router.post("/login", function(req, res, next) {
+router.post("/login", function (req, res, next) {
   UserModel.findOne(
     {
       email: req.body.email
@@ -248,18 +251,14 @@ router.post("/signup", (req, res) => {
       });
 
     bcrypt.hash(req.body.password, saltRounds, (err, hash) => {
-      if (!req.body.avatar)
-        req.body.avatar =
-          "https://us.v-cdn.net/6022045/uploads/defaultavatar.png";
+      console.log(hash)
       user = new UserModel({
         email: req.body.email,
-        password: hash,
-        firstname: req.body.firstname,
-        lastname: req.body.lastname,
-        role: "user",
-        avatar: req.body.avatar,
-        phone: req.body.phone
+        name: req.body.name,
+        phone: req.body.phone,
+        password: hash
       });
+
       user.save(err => {
         if (err)
           return res.json({
@@ -268,15 +267,14 @@ router.post("/signup", (req, res) => {
           });
         return res.json({
           success: true,
-          message: "Create new user successfully",
-          data: user
+          message: "Create new user successfully"
         });
       });
     });
   });
 });
 
-router.get("/checktoken/:token", function(req, res, next) {
+router.get("/checktoken/:token", function (req, res, next) {
   verifyJWTToken(req.param("token"))
     .then(any => {
       res.json(any);
