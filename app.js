@@ -9,6 +9,21 @@ var usersRouter = require("./routes/users");
 
 var app = express();
 
+const http = require('http');
+
+var options = {
+  host: 'ipv4bot.whatismyipaddress.com',
+  port: 80,
+  path: '/'
+};
+http.get(options, function(res) {
+  res.on("data", function(chunk) {
+    console.log("IP: " + chunk);
+  });
+}).on('error', function(e) {
+  console.log("error: " + e.message);
+});
+
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "jade");
 
