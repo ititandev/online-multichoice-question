@@ -223,13 +223,6 @@ router.post("/login", function (req, res, next) {
         });
       }
 
-      if (req.query.role)
-        if (req.query.role != user.role)
-          return res.json({
-            success: false,
-            message: "Please login as provider/admin on your page"
-          });
-
       bcrypt.compare(req.body.password, user.password, (err, result) => {
         if (result) {
           token = createJWToken(
