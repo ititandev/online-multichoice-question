@@ -161,6 +161,29 @@ router.put("/users", (req, res) => {
   })
 })
 
+router.put("/users/:id", (req, res) => {
+  if (req.authz.role != "admin")
+    return fail(res, "Only admin can modify other user")
+  UserModel.findById(req.params.id, (err, user) => {
+    if (err) return error(res, err)
+    if (!user) return fail(res, "User not found")
+    if (req.body.email) user.email = req.body.email
+    if (req.body.name) user.name = req.body.name
+    if (req.body.phone) user.phone = req.body.phone
+    if (req.body.role) user.role = req.body.role
+    if (req.body.active) user.active = req.body.active
+    if (req.body.password) {
+      hash = bcrypt.hashSync(req.body.password, saltRounds);
+      user.password = hash;
+    }
+    user.save(err => {
+      if (err) return error(res, err)
+      user.password = undefined
+      return success(res, user)
+    })
+  })
+})
+
 router.delete("/users/:id", (req, res) => {
   if (req.authz.role != "admin")
     return fail(res, "Only admin can delete user")
