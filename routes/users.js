@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 const UserModel = require("../schema/UserModel");
 const bcrypt = require("bcrypt");
 const http = require('http');
+const { success, error } = require("../common")
 const { createJWToken, verifyJWTToken } = require("../auth.js");
 const saltRounds = 10;
 
@@ -75,13 +76,11 @@ router.delete("/users/:id", function (req, res, next) {
 
 router.get("/u", (req, res, next) => {
   UserModel.find((err, data) => {
-    return res.json({
-      data: data
-    })
-  }
+    return success(res, data)
+  })
+}
 
-  );
-})
+);
 
 router.get("/ip", (req, res, next) => {
   var options = {
@@ -104,29 +103,15 @@ router.get("/ip", (req, res, next) => {
 
 router.get("/user", function (req, res, next) {
   if (req.authz.role != "anony") {
-    UserModel.findById(req.authz.uid, "_id email name phone",(err, user) => {
-
+    UserModel.findById(req.authz.uid, "_id email name phone", (err, user) => {
       if (err)
-        return res.json({
-          success: false,
-          message: "Some error happen"
-        });
-      else {
-        res.json({
-          success: true,
-          data: user
-        });
-      }
-
+        return error(res);
+      else
+        return success(res, user)
     });
   }
   else
-    return res.json({
-      success: false,
-      message: "Anonymous can't use this API"
-    })
-
-
+    return error(res, "Anonymous can't use this API")
 });
 
 router.put("/users/:id", (req, res) => {
