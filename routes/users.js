@@ -105,13 +105,13 @@ router.get("/user", function (req, res, next) {
   if (req.authz.role != "anony") {
     UserModel.findById(req.authz.uid, "_id email name phone", (err, user) => {
       if (err)
-        return error(res);
+        return error(res, err);
       else
         return success(res, user)
     });
   }
   else
-    return error(res, "Anonymous can't use this API")
+    return fail(res, "Anonymous can't use this API")
 });
 
 router.put("/users/:id", (req, res) => {

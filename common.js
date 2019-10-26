@@ -8,15 +8,26 @@ function success(res, data, message) {
     }
     if (message)
         response.message = message;
-    res.json(response)
+    return res.json(response)
 }
 
 
-function error(res, message) {
+function error(res, error, message) {
     if (!message)
         message = "Some error happen"
+    if (error)
+        console.log(error);
+    else 
+        console.log(message);
 
-    res.json({
+    return res.json({
+        success: false,
+        message: message
+    })
+}
+
+function fail(res, message) {
+    return res.json({
         success: false,
         message: message
     })
@@ -24,5 +35,6 @@ function error(res, message) {
 
 module.exports = {
     success,
-    error
+    error,
+    fail
 }
