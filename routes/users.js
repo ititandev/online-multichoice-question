@@ -122,14 +122,25 @@ router.get("/users", (req, res) => {
   if (req.authz.role == "admin") {
     if (!req.query.limit)
       req.query.limit = 10
+    if (!req.query.page)
+      req.query.page = 1
+
     UserModel.find(req.query.active ? { active: req.query.active } : {})
       .select("_id email name role phone datetime active")
-      .skip(0)
-      .limit(0)
+      .sort('email')
+      .skip((req.query.page - 1) * req.query.limit)
+      .limit(parseInt(req.query.limit))
       .exec((err, users) => {
         if (err) return error(res, err)
         else {
-          return success(res, users)
+          UserModel.countDocuments(req.query.active ? { active: req.query.active } : {}, (err, totalPage) => {
+            if (err) return error(res, err)
+            totalPage = Math.ceil(totalPage / req.query.limit)
+              previous = req.query.page > 1 ? req.protocol + "://" + req.get("host") + "/api/users?page=" + (Number(req.query.page) - 1) + "&limit=" + req.query.limit : null
+              next = req.query.page < totalPage ? req.protocol + "://" + req.get("host") + "/api/users?page=" + (Number(req.query.page) + 1) + "&limit=" + req.query.limit : null
+            data = { totalPage: totalPage, page: req.query.page, data: users, previous: previous, next: next }
+            return success(res, data)
+          })
         }
       })
   }
