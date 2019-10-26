@@ -1,10 +1,8 @@
-var createError = require("http-errors");
 var express = require("express");
 var path = require("path");
 var cookieParser = require("cookie-parser");
 var logger = require("morgan");
-
-var indexRouter = require("./routes/index");
+const { verifyJWTToken } = require("./auth.js");
 var usersRouter = require("./routes/users");
 
 var app = express();
@@ -16,11 +14,11 @@ var options = {
   port: 80,
   path: '/'
 };
-http.get(options, function(res) {
-  res.on("data", function(chunk) {
+http.get(options, function (res) {
+  res.on("data", function (chunk) {
     console.log("IP: " + chunk);
   });
-}).on('error', function(e) {
+}).on('error', function (e) {
   console.log("error: " + e.message);
 });
 
@@ -28,7 +26,7 @@ app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "jade");
 
 
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader(
     "Access-Control-Allow-Methods",
@@ -50,20 +48,33 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
 
+app.use((req, res, next) => {
+  verifyJWTToken(req.header("Authorization")).then(payload => {
+    if (!payload.role)
+      payload.role = "anony"
+    req.auth = payload
+    next();
+  })
+    .catch(err => {
+      req.auth = { role: "anony" }
+      next();
+    })
+})
+
 app.use("/api/", usersRouter);
 
 app.get("/", (req, res) => {
-  res.sendfile(__dirname + "/public/index.html");
+  res.sendFile(__dirname + "/public/index.html");
 });
 
 
 
-app.use(function(req, res, next) {
-  res.sendfile(__dirname + "/public/index.html");
+app.use(function (req, res, next) {
+  res.sendFile(__dirname + "/public/index.html");
 });
 
 
-app.use(function(err, req, res, next) {
+app.use(function (err, req, res, next) {
   res.locals.message = err.message;
   res.locals.error = req.app.get("env") === "development" ? err : {};
 

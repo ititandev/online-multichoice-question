@@ -7,6 +7,7 @@ const http = require('http');
 const { createJWToken, verifyJWTToken } = require("../auth.js");
 const saltRounds = 10;
 
+
 mongoose.connect(
   // "mongodb+srv://admin:admin@omcq-dfqf7.gcp.mongodb.net/omcq?retryWrites=true&w=majority",
   "mongodb://admin:admin123@ds137008.mlab.com:37008/mcq",
@@ -99,6 +100,7 @@ router.get("/ip", (req, res, next) => {
   });
 }
 );
+
 
 router.get("/users", function (req, res, next) {
   verifyJWTToken(req.header("Authorization"))
@@ -286,14 +288,8 @@ router.post("/signup", (req, res) => {
   });
 });
 
-router.get("/checktoken/:token", function (req, res, next) {
-  verifyJWTToken(req.param("token"))
-    .then(any => {
-      res.json(any);
-    })
-    .catch(err => {
-      res.send(err);
-    });
+router.get("/token", function (req, res, next) {
+  return res.json(req.auth)
 });
 
 module.exports = router;
