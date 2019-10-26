@@ -52,11 +52,11 @@ app.use((req, res, next) => {
   verifyJWTToken(req.header("Authorization")).then(payload => {
     if (!payload.role)
       payload.role = "anony"
-    req.auth = payload
+    req.authz = payload
     next();
   })
     .catch(err => {
-      req.auth = { role: "anony" }
+      req.authz = { role: "anony" }
       next();
     })
 })

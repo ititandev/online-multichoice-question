@@ -1,5 +1,4 @@
 const jwt = require('jsonwebtoken');
-const _ = require("lodash");
 
 function verifyJWTToken(token) {
     return new Promise((resolve, reject) => {

@@ -102,50 +102,31 @@ router.get("/ip", (req, res, next) => {
 );
 
 
-router.get("/users", function (req, res, next) {
-  verifyJWTToken(req.header("Authorization"))
-    .then(payload => {
-      if (payload.role != "admin")
+router.get("/user", function (req, res, next) {
+  if (req.authz.role != "anony") {
+    UserModel.findById(req.authz.uid, "_id email name phone",(err, user) => {
+
+      if (err)
         return res.json({
           success: false,
-          message: "Only admin can get all users"
+          message: "Some error happen"
         });
+      else {
+        res.json({
+          success: true,
+          data: user
+        });
+      }
 
-      if (req.query.role) {
-        arr = [];
-        role = parseInt(req.query.role);
-        if (role % 2) arr.push("admin");
-        role = role >> 1;
-        if (role % 2) arr.push("provider");
-        role = role >> 1;
-        if (role % 2) arr.push("user");
-
-        query = {
-          role: {
-            $in: arr
-          }
-        };
-      } else query = {};
-
-      UserModel.find(query, (err, data) => {
-        if (err) {
-          return res.json({
-            success: false,
-            message: "Some error happen"
-          });
-        } else
-          res.json({
-            success: true,
-            data: data
-          });
-      });
-    })
-    .catch(err => {
-      return res.json({
-        success: false,
-        message: "Authentication failed " + err
-      });
     });
+  }
+  else
+    return res.json({
+      success: false,
+      message: "Anonymous can't use this API"
+    })
+
+
 });
 
 router.put("/users/:id", (req, res) => {
@@ -289,7 +270,7 @@ router.post("/signup", (req, res) => {
 });
 
 router.get("/token", function (req, res, next) {
-  return res.json(req.auth)
+  return res.json(req.authz)
 });
 
 module.exports = router;
