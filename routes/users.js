@@ -1,20 +1,11 @@
 var express = require("express");
 var router = express.Router();
-const mongoose = require("mongoose");
 const UserModel = require("../schema/UserModel");
 const bcrypt = require("bcrypt");
 const http = require('http');
 const { success, error, fail } = require("../common")
 const { createJWToken, verifyJWTToken } = require("../auth.js");
 const saltRounds = 10;
-
-
-mongoose.connect(
-  // "mongodb+srv://admin:admin@omcq-dfqf7.gcp.mongodb.net/omcq?retryWrites=true&w=majority",
-  "mongodb://admin:admin123@ds137008.mlab.com:37008/mcq",
-  { useNewUrlParser: true }
-);
-
 
 
 router.get("/u", (req, res, next) => {
@@ -129,12 +120,18 @@ router.get("/user", function (req, res, next) {
 
 router.get("/users", (req, res) => {
   if (req.authz.role == "admin") {
-    UserModel.find({}, "_id email name role phone datetime", { skip: 1 }, (err, users) => {
-      if (err) return error(res, err)
-      else {
-        return success(res, users)
-      }
-    })
+    if (!req.query.limit)
+      req.query.limit = 10
+    UserModel.find(req.query.active ? { active: req.query.active } : {})
+      .select("_id email name role phone datetime active")
+      .skip(0)
+      .limit(0)
+      .exec((err, users) => {
+        if (err) return error(res, err)
+        else {
+          return success(res, users)
+        }
+      })
   }
   else
     return fail(res, "Only admin can get list of users")
@@ -187,7 +184,7 @@ router.put("/users/:id", (req, res) => {
 router.delete("/users/:id", (req, res) => {
   if (req.authz.role != "admin")
     return fail(res, "Only admin can delete user")
-  UserModel.deleteOne({_id: req.params.id}, (err) => {
+  UserModel.deleteOne({ _id: req.params.id }, (err) => {
     if (err) return err(res, err)
     return success(res, "Delete successfully")
   })

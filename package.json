@@ -17,7 +17,8 @@
     "lodash": "^4.17.11",
     "mongoose": "^5.5.5",
     "morgan": "~1.9.0",
-    "nodemon": "^1.19.0"
+    "nodemon": "^1.19.0",
+    "dotenv": "^5.0.1"
   },
   "nodemonConfig": {
     "restartable": "rs",
@@ -27,8 +28,7 @@
     "delay": "0",
     "env": {
       "NODE_ENV": "development",
-      "PORT": 3000,
-      "JWT_SECRET": "ititan"
+      "PORT": 3000
     }
   }
 }

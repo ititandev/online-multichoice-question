@@ -2,10 +2,14 @@ var express = require("express");
 var path = require("path");
 var cookieParser = require("cookie-parser");
 var logger = require("morgan");
+const mongoose = require("mongoose");
 const { verifyJWTToken } = require("./auth.js");
 var usersRouter = require("./routes/users");
 const otherRouter = require("./routes/other")
+
+require('dotenv').config();
 var app = express();
+
 
 const http = require('http');
 
@@ -25,6 +29,7 @@ http.get(options, function (res) {
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "jade");
 
+mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true });
 
 app.use(function (req, res, next) {
   res.setHeader("Access-Control-Allow-Origin", "*");
