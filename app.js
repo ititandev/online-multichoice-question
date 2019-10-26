@@ -4,7 +4,7 @@ var cookieParser = require("cookie-parser");
 var logger = require("morgan");
 const { verifyJWTToken } = require("./auth.js");
 var usersRouter = require("./routes/users");
-
+const otherRouter = require("./routes/other")
 var app = express();
 
 const http = require('http');
@@ -62,10 +62,7 @@ app.use((req, res, next) => {
 })
 
 app.use("/api/", usersRouter);
-
-app.get("/", (req, res) => {
-  res.sendFile(__dirname + "/public/index.html");
-});
+app.use("/api/", otherRouter)
 
 
 

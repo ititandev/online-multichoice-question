@@ -78,12 +78,12 @@ router.post("/login", function (req, res, next) {
       email: req.body.email
     },
     (err, user) => {
-      if (err) 
+      if (err)
         return err(res, err)
 
-      if (!user) 
+      if (!user)
         return fail(res, "Account does not exist")
-      
+
       if (user.active == false)
         return fail(res, "Account is not active")
 
@@ -141,8 +141,28 @@ router.get("/users", (req, res) => {
 })
 
 
+router.put("/users", (req, res) => {
+  if (req.authz.role == "anony")
+    return fail(res, "Anonymous can't use this API")
+  UserModel.findById(req.authz.uid, (err, user) => {
+    if (err) return error(res, err)
+    if (!user) return fail(res, "User not found")
+    if (req.body.name) user.name = req.body.name
+    if (req.body.phone) user.phone = req.body.phone
+    if (req.body.password) {
+      hash = bcrypt.hashSync(req.body.password, saltRounds);
+      user.password = hash;
+    }
+    user.save(err => {
+      if (err) return error(res, err)
+      user.password = undefined
+      return success(res, user)
+    })
+  })
+})
 
-router.put("/users/:id", (req, res) => {
+
+router.put("/usersa/:id", (req, res) => {
   verifyJWTToken(req.header("Authorization"))
     .then(payload => {
       UserModel.findById(req.params.id, (err, user) => {
@@ -191,12 +211,6 @@ router.put("/users/:id", (req, res) => {
         });
       });
     })
-    .catch(err => {
-      return res.json({
-        success: false,
-        message: "Authentication failed"
-      });
-    });
 });
 
 
