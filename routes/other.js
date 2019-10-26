@@ -6,7 +6,6 @@ const { success, error, fail } = require("../common")
 router.get("/homepage", (req, res) => {
     ConfigModel.findOne({ name: "homepage" }, (err, config) => {
         if (err) return error(res, err)
-        console.log(config)
         if (!config)
             return success(res, " ", "Not configured")
         else
@@ -15,10 +14,14 @@ router.get("/homepage", (req, res) => {
 })
 
 router.put("/homepage", (req, res) => {
+    if (req.authz.role != "admin")
+        return fail(res, "Only admin can set homepage")
+
     ConfigModel.findOne({ name: "homepage" }, (err, config) => {
         if (err) return error(res, err)
         if (config) {
             config.data = req.body.homepage
+            config.date = undefined
             config.save(err => {
                 if (err) return error(res, err)
                 return success(res, config.data)
