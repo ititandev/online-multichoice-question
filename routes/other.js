@@ -21,7 +21,7 @@ router.put("/homepage", (req, res) => {
         if (err) return error(res, err)
         if (config) {
             config.data = req.body.homepage
-            config.date = undefined
+            config.datetime = Date.now()
             config.save(err => {
                 if (err) return error(res, err)
                 return success(res, config.data)
