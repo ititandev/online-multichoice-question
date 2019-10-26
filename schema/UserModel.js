@@ -5,9 +5,9 @@ const UserSchema = new Schema({
     name: {type: String, required: true },
     phone: {type: String, required: true },
     password: {type: String, required: true },
-    role: {type: String, default: "user" },
+    role: {type: String, required: true, default: "user" },
     datetime: { type: Date, default: Date.now },
-    active: {Type: Boolean, default: false}
+    active: {type: Boolean, required: true, default: false}
 });
 const UserModel = mongoose.model('users', UserSchema);
 

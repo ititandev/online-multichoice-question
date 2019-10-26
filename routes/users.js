@@ -78,19 +78,14 @@ router.post("/login", function (req, res, next) {
       email: req.body.email
     },
     (err, user) => {
-      if (err) {
-        return res.json({
-          success: false,
-          message: "Some error happen"
-        });
-      }
+      if (err) 
+        return err(res, err)
 
-      if (!user) {
-        return res.json({
-          success: false,
-          message: "Account does not exist"
-        });
-      }
+      if (!user) 
+        return fail(res, "Account does not exist")
+      
+      if (user.active == false)
+        return fail(res, "Account is not active")
 
       bcrypt.compare(req.body.password, user.password, (err, result) => {
         if (result) {
@@ -131,6 +126,19 @@ router.get("/user", function (req, res, next) {
   else
     return fail(res, "Anonymous can't use this API")
 });
+
+router.get("/users", (req, res) => {
+  if (req.authz.role == "admin") {
+    UserModel.find({}, "_id email name role phone datetime", { skip: 1 }, (err, users) => {
+      if (err) return error(res, err)
+      else {
+        return success(res, users)
+      }
+    })
+  }
+  else
+    return fail(res, "Only admin can get list of users")
+})
 
 
 
