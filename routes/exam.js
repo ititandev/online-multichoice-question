@@ -138,4 +138,48 @@ router.delete("/contents/:id", (req, res) => {
 })
 
 
+
+
+
+router.get("/exams/:id", (req, res) => {
+    ExamModel.find({ contentId: req.params.id })
+        // .populate("contentId")
+        .exec((err, exams) => {
+            if (err) return error(res, err)
+            return success(res, exams)
+        })
+})
+
+router.post("/exams", (req, res) => {
+    if (req.authz.role != "admin")
+        return fail(res, "Only admin can create exams")
+    ExamModel.find({ name: req.body.name, contentId: req.body.contentId }, (err, exams) => {
+        if (err) return error(res, err)
+        if (exams.length > 0)
+            return fail(res, "Exam exists")
+        ExamModel.create(req.body, (err, c) => {
+            if (err) return error(res, err)
+            return success(res, c)
+        })
+    })
+
+})
+
+router.put("/exams/:id", (req, res) => {
+    if (req.authz.role != "admin")
+        return fail(res, "Only admin can edit exams")
+    ExamModel.updateOne({ _id: req.params.id }, req.body, (err, r) => {
+        if (err) return error(res, err)
+        return success(res, "Edit the exam successfully")
+    })
+})
+
+router.delete("/exams/:id", (req, res) => {
+    if (req.authz.role != "admin")
+        return fail(res, "Only admin can delete exams")
+    ExamModel.deleteOne({ _id: req.params.id }, err => {
+        if (err) return error(res, err)
+        return success(res, "Delete the exam successfully")
+    })
+})
 module.exports = router;
