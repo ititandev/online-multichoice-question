@@ -5,6 +5,8 @@ const SubjectModel = require("../schema/SubjectModel");
 const ContentModel = require("../schema/ContentModel");
 const ExamModel = require("../schema/ExamModel");
 const { success, error, fail } = require("../common")
+const bcrypt = require("bcrypt");
+const saltRounds = 10;
 
 
 router.get("/classes", (req, res) => {
@@ -157,10 +159,20 @@ router.post("/exams", (req, res) => {
         if (err) return error(res, err)
         if (exams.length > 0)
             return fail(res, "Exam exists")
-        ExamModel.create(req.body, (err, c) => {
-            if (err) return error(res, err)
-            return success(res, c)
-        })
+        if (req.body.password) {
+            bcrypt.hash(req.body.password, saltRounds, (err, hash) => {
+                if (err) return error(res, err)
+                req.body.password = hash
+                ExamModel.create(req.body, (err, exam) => {
+                    if (err) return error(res, err)
+                    return success(res, exam)
+                })
+            })
+        } else
+            ExamModel.create(req.body, (err, c) => {
+                if (err) return error(res, err)
+                return success(res, c)
+            })
     })
 
 })
@@ -182,4 +194,13 @@ router.delete("/exams/:id", (req, res) => {
         return success(res, null, "Delete the exam successfully")
     })
 })
+
+
+
+router.post("/answers", (req, res) => {
+    if (req.authz.role == "anony")
+        return fail(res, "Please login before starting the exam")
+    ExamModel.create({})
+})
+
 module.exports = router;

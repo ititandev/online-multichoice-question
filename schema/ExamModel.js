@@ -7,6 +7,7 @@ const ExamSchema = new Schema({
     explainUrl: { type: String, required: true },
     time: { type: Number, required: true },
     total: { type: Number, required: true },
+    password: {type: String, default: ""},
     note: { type: String, required: true },
     contentId: { type: Schema.Types.ObjectId, ref: 'contents', required: true },
     datetime: { type: Date, default: Date.now }
