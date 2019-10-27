@@ -34,7 +34,7 @@ router.put("/classes/:id", (req, res) => {
         return fail(res, "Only admin can edit classes")
     ClassModel.updateOne({ _id: req.params.id }, { name: req.body.name }, (err, r) => {
         if (err) return error(res, err)
-        return success(res, "Edit the class successfully")
+        return success(res, null, "Edit the class successfully")
     })
 })
 
@@ -43,7 +43,7 @@ router.delete("/classes/:id", (req, res) => {
         return fail(res, "Only admin can delete classes")
     ClassModel.deleteOne({ _id: req.params.id }, err => {
         if (err) return error(res, err)
-        return success(res, "Delete the class successfully")
+        return success(res, null, "Delete the class successfully")
     })
 })
 
@@ -79,7 +79,7 @@ router.put("/subjects/:id", (req, res) => {
         return fail(res, "Only admin can edit subjects")
     SubjectModel.updateOne({ _id: req.params.id }, { name: req.body.name }, (err, r) => {
         if (err) return error(res, err)
-        return success(res, "Edit the subject successfully")
+        return success(res, null, "Edit the subject successfully")
     })
 })
 
@@ -88,7 +88,7 @@ router.delete("/subjects/:id", (req, res) => {
         return fail(res, "Only admin can delete subjects")
     SubjectModel.deleteOne({ _id: req.params.id }, err => {
         if (err) return error(res, err)
-        return success(res, "Delete the subject successfully")
+        return success(res, null, "Delete the subject successfully")
     })
 })
 
@@ -124,7 +124,7 @@ router.put("/contents/:id", (req, res) => {
         return fail(res, "Only admin can edit contents")
     ContentModel.updateOne({ _id: req.params.id }, { name: req.body.name }, (err, r) => {
         if (err) return error(res, err)
-        return success(res, "Edit the content successfully")
+        return success(res, null, "Edit the content successfully")
     })
 })
 
@@ -133,7 +133,7 @@ router.delete("/contents/:id", (req, res) => {
         return fail(res, "Only admin can delete contents")
     ContentModel.deleteOne({ _id: req.params.id }, err => {
         if (err) return error(res, err)
-        return success(res, "Delete the content successfully")
+        return success(res, null, "Delete the content successfully")
     })
 })
 
@@ -170,7 +170,7 @@ router.put("/exams/:id", (req, res) => {
         return fail(res, "Only admin can edit exams")
     ExamModel.updateOne({ _id: req.params.id }, req.body, (err, r) => {
         if (err) return error(res, err)
-        return success(res, "Edit the exam successfully")
+        return success(res, null, "Edit the exam successfully")
     })
 })
 
@@ -179,7 +179,7 @@ router.delete("/exams/:id", (req, res) => {
         return fail(res, "Only admin can delete exams")
     ExamModel.deleteOne({ _id: req.params.id }, err => {
         if (err) return error(res, err)
-        return success(res, "Delete the exam successfully")
+        return success(res, null, "Delete the exam successfully")
     })
 })
 module.exports = router;
