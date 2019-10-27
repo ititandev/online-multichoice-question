@@ -136,8 +136,8 @@ router.get("/users", (req, res) => {
           UserModel.countDocuments(req.query.active ? { active: req.query.active } : {}, (err, totalPage) => {
             if (err) return error(res, err)
             totalPage = Math.ceil(totalPage / req.query.limit)
-              previous = req.query.page > 1 ? req.protocol + "://" + req.get("host") + "/api/users?page=" + (Number(req.query.page) - 1) + "&limit=" + req.query.limit : null
-              next = req.query.page < totalPage ? req.protocol + "://" + req.get("host") + "/api/users?page=" + (Number(req.query.page) + 1) + "&limit=" + req.query.limit : null
+            previous = req.query.page > 1 ? req.protocol + "://" + req.get("host") + "/api/users?page=" + (Number(req.query.page) - 1) + "&limit=" + req.query.limit : null
+            next = req.query.page < totalPage ? req.protocol + "://" + req.get("host") + "/api/users?page=" + (Number(req.query.page) + 1) + "&limit=" + req.query.limit : null
             data = { totalPage: totalPage, page: req.query.page, data: users, previous: previous, next: next }
             return success(res, data)
           })
@@ -148,6 +148,34 @@ router.get("/users", (req, res) => {
     return fail(res, "Only admin can get list of users")
 })
 
+router.post("/users", (req, res) => {
+  if (req.authz.role != "admin")
+    return fail(res, "Only admin can create users")
+  UserModel.find({ email: req.body.email }, (err, data) => {
+    if (err) {
+      return error(res, err)
+    }
+
+    if (data.length > 0)
+      return fail(res, "User exists")
+
+    bcrypt.hash(req.body.password, saltRounds, (err, hash) => {
+      user = new UserModel({
+        email: req.body.email,
+        name: req.body.name,
+        phone: req.body.phone,
+        password: hash,
+        active: true
+      });
+
+      user.save(err => {
+        if (err)
+          return error(res, err)
+        return success(res, null, "Create new user successfully")
+      });
+    });
+  })
+})
 
 router.put("/users", (req, res) => {
   if (req.authz.role == "anony")
