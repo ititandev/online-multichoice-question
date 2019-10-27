@@ -92,4 +92,50 @@ router.delete("/subjects/:id", (req, res) => {
     })
 })
 
+
+
+
+router.get("/contents/:id", (req, res) => {
+    ContentModel.find({ subjectId: req.params.id })
+        // .populate("subjectId")
+        .exec((err, contents) => {
+            if (err) return error(res, err)
+            return success(res, contents)
+        })
+})
+
+router.post("/contents", (req, res) => {
+    if (req.authz.role != "admin")
+        return fail(res, "Only admin can create contents")
+    ContentModel.find({ name: req.body.name }, (err, contents) => {
+        if (err) return error(res, err)
+        if (contents.length > 0)
+            return fail(res, "Content existes")
+        ContentModel.create({ name: req.body.name, subjectId: req.body.subjectId }, (err, c) => {
+            if (err) return error(res, err)
+            return success(res, c)
+        })
+    })
+
+})
+
+router.put("/contents/:id", (req, res) => {
+    if (req.authz.role != "admin")
+        return fail(res, "Only admin can edit contents")
+    ContentModel.updateOne({ _id: req.params.id }, { name: req.body.name }, (err, r) => {
+        if (err) return error(res, err)
+        return success(res, "Edit the content successfully")
+    })
+})
+
+router.delete("/contents/:id", (req, res) => {
+    if (req.authz.role != "admin")
+        return fail(res, "Only admin can delete contents")
+    ContentModel.deleteOne({ _id: req.params.id }, err => {
+        if (err) return error(res, err)
+        return success(res, "Delete the content successfully")
+    })
+})
+
+
 module.exports = router;
