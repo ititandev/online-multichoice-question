@@ -220,6 +220,15 @@ router.put("/users/:id", (req, res) => {
   })
 })
 
+router.put("/active", (req,res) => {
+  if (req.authz.role != "admin")
+    return fail(res, "Only admin can modify other user")
+  UserModel.updateMany({active: false}, {active: true}, (err, r) => {
+    if (err) return error(res, err)
+    return success(res, "Set active for " + r.nModified + " users")
+  })
+})
+
 router.delete("/users/:id", (req, res) => {
   if (req.authz.role != "admin")
     return fail(res, "Only admin can delete user")
