@@ -20,7 +20,7 @@ router.post("/classes", (req, res) => {
     ClassModel.find({ name: req.body.name }, (err, classes) => {
         if (err) return error(res, err)
         if (classes.length > 0)
-            return fail(res, "Class existes")
+            return fail(res, "Class exists")
         ClassModel.create({ name: req.body.name }, (err, c) => {
             if (err) return error(res, err)
             return success(res, c)
@@ -65,7 +65,7 @@ router.post("/subjects", (req, res) => {
     SubjectModel.find({ name: req.body.name, classId: req.body.classId }, (err, subjects) => {
         if (err) return error(res, err)
         if (subjects.length > 0)
-            return fail(res, "Subject existes")
+            return fail(res, "Subject exists")
         SubjectModel.create({ name: req.body.name, classId: req.body.classId }, (err, c) => {
             if (err) return error(res, err)
             return success(res, c)
@@ -110,7 +110,7 @@ router.post("/contents", (req, res) => {
     ContentModel.find({ name: req.body.name, subjectId: req.body.subjectId }, (err, contents) => {
         if (err) return error(res, err)
         if (contents.length > 0)
-            return fail(res, "Content existes")
+            return fail(res, "Content exists")
         ContentModel.create({ name: req.body.name, subjectId: req.body.subjectId }, (err, c) => {
             if (err) return error(res, err)
             return success(res, c)
