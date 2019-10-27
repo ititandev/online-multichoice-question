@@ -6,6 +6,7 @@ const mongoose = require("mongoose");
 const { verifyJWTToken } = require("./auth.js");
 var usersRouter = require("./routes/users");
 const otherRouter = require("./routes/other")
+const examRouter = require("./routes/exam")
 
 require('dotenv').config();
 var app = express();
@@ -68,6 +69,7 @@ app.use((req, res, next) => {
 
 app.use("/api/", usersRouter);
 app.use("/api/", otherRouter)
+app.use("/api/", examRouter)
 
 
 
