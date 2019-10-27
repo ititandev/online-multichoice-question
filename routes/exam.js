@@ -41,18 +41,22 @@ router.put("/classes/:id", (req, res) => {
 router.delete("/classes/:id", (req, res) => {
     if (req.authz.role != "admin")
         return fail(res, "Only admin can delete classes")
-    ClassModel.deleteOne({_id: req.params.id}, err => {
+    ClassModel.deleteOne({ _id: req.params.id }, err => {
         if (err) return error(res, err)
         return success(res, "Delete the class successfully")
     })
 })
 
 
-router.get("/subjects", (req, res) => {
-    SubjectModel.find((err, subjects) => {
-        if (err) return error(res, err)
-        return success(res, subjects)
-    })
+
+
+router.get("/subjects/:id", (req, res) => {
+    SubjectModel.find({ classId: req.params.id })
+        // .populate("classId")
+        .exec((err, subjects) => {
+            if (err) return error(res, err)
+            return success(res, subjects)
+        })
 })
 
 router.post("/subjects", (req, res) => {
@@ -62,7 +66,7 @@ router.post("/subjects", (req, res) => {
         if (err) return error(res, err)
         if (subjects.length > 0)
             return fail(res, "Subject existes")
-        SubjectModel.create({ name: req.body.name }, (err, c) => {
+        SubjectModel.create({ name: req.body.name, classId: req.body.classId }, (err, c) => {
             if (err) return error(res, err)
             return success(res, c)
         })
@@ -82,7 +86,7 @@ router.put("/subjects/:id", (req, res) => {
 router.delete("/subjects/:id", (req, res) => {
     if (req.authz.role != "admin")
         return fail(res, "Only admin can delete subjects")
-    SubjectModel.deleteOne({_id: req.params.id}, err => {
+    SubjectModel.deleteOne({ _id: req.params.id }, err => {
         if (err) return error(res, err)
         return success(res, "Delete the subject successfully")
     })
