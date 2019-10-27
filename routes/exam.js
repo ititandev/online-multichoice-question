@@ -62,7 +62,7 @@ router.get("/subjects/:id", (req, res) => {
 router.post("/subjects", (req, res) => {
     if (req.authz.role != "admin")
         return fail(res, "Only admin can create subjects")
-    SubjectModel.find({ name: req.body.name }, (err, subjects) => {
+    SubjectModel.find({ name: req.body.name, classId: req.body.classId }, (err, subjects) => {
         if (err) return error(res, err)
         if (subjects.length > 0)
             return fail(res, "Subject existes")
@@ -107,7 +107,7 @@ router.get("/contents/:id", (req, res) => {
 router.post("/contents", (req, res) => {
     if (req.authz.role != "admin")
         return fail(res, "Only admin can create contents")
-    ContentModel.find({ name: req.body.name }, (err, contents) => {
+    ContentModel.find({ name: req.body.name, subjectId: req.body.subjectId }, (err, contents) => {
         if (err) return error(res, err)
         if (contents.length > 0)
             return fail(res, "Content existes")
