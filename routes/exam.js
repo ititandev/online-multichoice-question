@@ -154,8 +154,15 @@ router.delete("/contents/:id", (req, res) => {
 router.get("/exams/:id", (req, res) => {
     ExamModel.find({ contentId: req.params.id })
         // .populate("contentId")
+        .select("name time total note datetime password")
         .exec((err, exams) => {
             if (err) return error(res, err)
+            exams.forEach(element => {
+                if (element.password)
+                    element.password = true
+                else
+                    element.password = false
+            });
             return success(res, exams)
         })
 })
