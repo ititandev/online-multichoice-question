@@ -6,7 +6,7 @@ const mongoose = require("mongoose");
 const { verifyJWTToken } = require("./auth.js");
 var usersRouter = require("./routes/users");
 const otherRouter = require("./routes/other")
-const examRouter = require("./routes/exam")
+const examRouter = require("./routes/exams")
 
 require('dotenv').config();
 var app = express();
