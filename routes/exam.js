@@ -18,11 +18,11 @@ router.get("/classes", (req, res) => {
 
 router.post("/classes", (req, res) => {
     if (req.authz.role != "admin")
-        return fail(res, "Only admin can create classes")
+        return fail(res, "Chỉ admin có thể tạo lớp học")
     ClassModel.find({ name: req.body.name }, (err, classes) => {
         if (err) return error(res, err)
         if (classes.length > 0)
-            return fail(res, "Class exists")
+            return fail(res, "Lớp học đã tồn tại")
         ClassModel.create({ name: req.body.name }, (err, c) => {
             if (err) return error(res, err)
             return success(res, c)
@@ -33,19 +33,19 @@ router.post("/classes", (req, res) => {
 
 router.put("/classes/:id", (req, res) => {
     if (req.authz.role != "admin")
-        return fail(res, "Only admin can edit classes")
+        return fail(res, "Chỉ admin có thể chỉnh sửa lớp học")
     ClassModel.updateOne({ _id: req.params.id }, { name: req.body.name }, (err, r) => {
         if (err) return error(res, err)
-        return success(res, null, "Edit the class successfully")
+        return success(res, null, "Chỉnh sửa lớp học thành công")
     })
 })
 
 router.delete("/classes/:id", (req, res) => {
     if (req.authz.role != "admin")
-        return fail(res, "Only admin can delete classes")
+        return fail(res, "Chỉ admin có thể xóa lớp học")
     ClassModel.deleteOne({ _id: req.params.id }, err => {
         if (err) return error(res, err)
-        return success(res, null, "Delete the class successfully")
+        return success(res, null, "Xóa lớp học thành công")
     })
 })
 
@@ -63,7 +63,7 @@ router.get("/subjects/:id", (req, res) => {
 
 router.post("/subjects", (req, res) => {
     if (req.authz.role != "admin")
-        return fail(res, "Only admin can create subjects")
+        return fail(res, "Chỉ admin có thể tạo môn học")
     ClassModel.find({ _id: req.body.classId }, (err, classes) => {
         if (err) return error(res, err)
         if (classes.length < 1)
@@ -71,7 +71,7 @@ router.post("/subjects", (req, res) => {
         SubjectModel.find({ name: req.body.name, classId: req.body.classId }, (err, subjects) => {
             if (err) return error(res, err)
             if (subjects.length > 0)
-                return fail(res, "Subject exists")
+                return fail(res, "Môn học đã tồn tại")
             SubjectModel.create({ name: req.body.name, classId: req.body.classId }, (err, c) => {
                 if (err) return error(res, err)
                 return success(res, c)
@@ -82,19 +82,19 @@ router.post("/subjects", (req, res) => {
 
 router.put("/subjects/:id", (req, res) => {
     if (req.authz.role != "admin")
-        return fail(res, "Only admin can edit subjects")
+        return fail(res, "Chỉ admin có thể chỉnh sửa môn học")
     SubjectModel.updateOne({ _id: req.params.id }, { name: req.body.name }, (err, r) => {
         if (err) return error(res, err)
-        return success(res, null, "Edit the subject successfully")
+        return success(res, null, "Chỉnh sửa môn học thành công")
     })
 })
 
 router.delete("/subjects/:id", (req, res) => {
     if (req.authz.role != "admin")
-        return fail(res, "Only admin can delete subjects")
+        return fail(res, "Chỉ admin có thể xóa môn học")
     SubjectModel.deleteOne({ _id: req.params.id }, err => {
         if (err) return error(res, err)
-        return success(res, null, "Delete the subject successfully")
+        return success(res, null, "Xóa môn học thành công")
     })
 })
 
@@ -112,7 +112,7 @@ router.get("/contents/:id", (req, res) => {
 
 router.post("/contents", (req, res) => {
     if (req.authz.role != "admin")
-        return fail(res, "Only admin can create contents")
+        return fail(res, "Chỉ admin có thể tạo chủ đề")
     SubjectModel.find({ _id: req.body.subjectId }, (err, subjects) => {
         if (err) return error(res, err)
         if (subjects.length < 1)
@@ -120,7 +120,7 @@ router.post("/contents", (req, res) => {
         ContentModel.find({ name: req.body.name, subjectId: req.body.subjectId }, (err, contents) => {
             if (err) return error(res, err)
             if (contents.length > 0)
-                return fail(res, "Content exists")
+                return fail(res, "Chủ đề đã tồn tại")
             ContentModel.create({ name: req.body.name, subjectId: req.body.subjectId }, (err, c) => {
                 if (err) return error(res, err)
                 return success(res, c)
@@ -131,19 +131,19 @@ router.post("/contents", (req, res) => {
 
 router.put("/contents/:id", (req, res) => {
     if (req.authz.role != "admin")
-        return fail(res, "Only admin can edit contents")
+        return fail(res, "Chỉ admin có thể chỉnh sửa chủ đề")
     ContentModel.updateOne({ _id: req.params.id }, { name: req.body.name }, (err, r) => {
         if (err) return error(res, err)
-        return success(res, null, "Edit the content successfully")
+        return success(res, null, "Chỉnh sửa chủ đề thành công")
     })
 })
 
 router.delete("/contents/:id", (req, res) => {
     if (req.authz.role != "admin")
-        return fail(res, "Only admin can delete contents")
+        return fail(res, "Chỉ admin có thể xóa chủ đề")
     ContentModel.deleteOne({ _id: req.params.id }, err => {
         if (err) return error(res, err)
-        return success(res, null, "Delete the content successfully")
+        return success(res, null, "Xóa chủ đề thành công")
     })
 })
 
@@ -169,7 +169,7 @@ router.get("/exams/:id", (req, res) => {
 
 router.post("/exams", (req, res) => {
     if (req.authz.role != "admin")
-        return fail(res, "Only admin can create exams")
+        return fail(res, "Chỉ admin có thể tạo bài kiểm tra")
     ContentModel.find({ _id: req.body.contentId }, (err, contents) => {
         if (err) return error(res, err)
         if (contents.length < 1)
@@ -177,7 +177,7 @@ router.post("/exams", (req, res) => {
         ExamModel.find({ name: req.body.name, contentId: req.body.contentId }, (err, exams) => {
             if (err) return error(res, err)
             if (exams.length > 0)
-                return fail(res, "Exam exists")
+                return fail(res, "Bài kiểm tra đã tồn tại")
             if (req.body.password) {
                 bcrypt.hash(req.body.password, saltRounds, (err, hash) => {
                     if (err) return error(res, err)
@@ -198,19 +198,19 @@ router.post("/exams", (req, res) => {
 
 router.put("/exams/:id", (req, res) => {
     if (req.authz.role != "admin")
-        return fail(res, "Only admin can edit exams")
+        return fail(res, "Chỉ admin có thể chỉnh sửa bài kiểm tra")
     ExamModel.updateOne({ _id: req.params.id }, req.body, (err, r) => {
         if (err) return error(res, err)
-        return success(res, null, "Edit the exam successfully")
+        return success(res, null, "Chỉnh sửa bài kiểm tra thành công")
     })
 })
 
 router.delete("/exams/:id", (req, res) => {
     if (req.authz.role != "admin")
-        return fail(res, "Only admin can delete exams")
+        return fail(res, "Chỉ admin có thể xóa bài kiểm tra")
     ExamModel.deleteOne({ _id: req.params.id }, err => {
         if (err) return error(res, err)
-        return success(res, null, "Delete the exam successfully")
+        return success(res, null, "Xóa bài kiểm tra thành công")
     })
 })
 
@@ -218,7 +218,7 @@ router.delete("/exams/:id", (req, res) => {
 
 router.post("/answers", (req, res) => {
     if (req.authz.role == "anony")
-        return fail(res, "Please login before starting the exam")
+        return fail(res, "Vui lòng đăng nhập trước khi làm bài kiểm tra")
     ExamModel.create({})
 })
 

@@ -15,7 +15,7 @@ router.get("/homepage", (req, res) => {
 
 router.put("/homepage", (req, res) => {
     if (req.authz.role != "admin")
-        return fail(res, "Only admin can set homepage")
+        return fail(res, "Chỉ admin có thể set homepage")
 
     ConfigModel.findOne({ name: "homepage" }, (err, config) => {
         if (err) return error(res, err)

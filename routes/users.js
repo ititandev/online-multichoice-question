@@ -145,12 +145,12 @@ router.get("/users", (req, res) => {
       })
   }
   else
-    return fail(res, "Only admin can get list of users")
+    return fail(res, "Chỉ admin có thể get list of users")
 })
 
 router.post("/users", (req, res) => {
   if (req.authz.role != "admin")
-    return fail(res, "Only admin can create users")
+    return fail(res, "Chỉ admin có thể create users")
   UserModel.find({ email: req.body.email }, (err, data) => {
     if (err) {
       return error(res, err)
@@ -199,7 +199,7 @@ router.put("/users", (req, res) => {
 
 router.put("/users/:id", (req, res) => {
   if (req.authz.role != "admin")
-    return fail(res, "Only admin can modify other user")
+    return fail(res, "Chỉ admin có thể modify other user")
   UserModel.findById(req.params.id, (err, user) => {
     if (err) return error(res, err)
     if (!user) return fail(res, "User not found")
@@ -222,7 +222,7 @@ router.put("/users/:id", (req, res) => {
 
 router.put("/active", (req,res) => {
   if (req.authz.role != "admin")
-    return fail(res, "Only admin can modify other user")
+    return fail(res, "Chỉ admin có thể modify other user")
   UserModel.updateMany({active: false}, {active: true}, (err, r) => {
     if (err) return error(res, err)
     return success(res, "Set active for " + r.nModified + " users")
@@ -231,7 +231,7 @@ router.put("/active", (req,res) => {
 
 router.delete("/users/:id", (req, res) => {
   if (req.authz.role != "admin")
-    return fail(res, "Only admin can delete user")
+    return fail(res, "Chỉ admin có thể delete user")
   UserModel.deleteOne({ _id: req.params.id }, (err) => {
     if (err) return err(res, err)
     return success(res, "Delete successfully")
