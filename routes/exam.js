@@ -64,16 +64,20 @@ router.get("/subjects/:id", (req, res) => {
 router.post("/subjects", (req, res) => {
     if (req.authz.role != "admin")
         return fail(res, "Only admin can create subjects")
-    SubjectModel.find({ name: req.body.name, classId: req.body.classId }, (err, subjects) => {
+    ClassModel.find({ _id: req.body.classId }, (err, classes) => {
         if (err) return error(res, err)
-        if (subjects.length > 0)
-            return fail(res, "Subject exists")
-        SubjectModel.create({ name: req.body.name, classId: req.body.classId }, (err, c) => {
+        if (classes.length < 1)
+            return fail(res, "Lớp học không tồn tại")
+        SubjectModel.find({ name: req.body.name, classId: req.body.classId }, (err, subjects) => {
             if (err) return error(res, err)
-            return success(res, c)
+            if (subjects.length > 0)
+                return fail(res, "Subject exists")
+            SubjectModel.create({ name: req.body.name, classId: req.body.classId }, (err, c) => {
+                if (err) return error(res, err)
+                return success(res, c)
+            })
         })
     })
-
 })
 
 router.put("/subjects/:id", (req, res) => {
@@ -109,7 +113,7 @@ router.get("/contents/:id", (req, res) => {
 router.post("/contents", (req, res) => {
     if (req.authz.role != "admin")
         return fail(res, "Only admin can create contents")
-    SubjectModel.find({ _id: subjectId }, (err, subjects) => {
+    SubjectModel.find({ _id: req.body.subjectId }, (err, subjects) => {
         if (err) return error(res, err)
         if (subjects.length < 1)
             return fail(res, "Môn học không tồn tại")
