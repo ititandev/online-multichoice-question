@@ -44,7 +44,7 @@ router.post("/signup", (req, res) => {
     }
 
     if (data.length > 0)
-      return fail(res, "User exists")
+      return fail(res, "Tài khoản đã tồn tại")
 
     bcrypt.hash(req.body.password, saltRounds, (err, hash) => {
       user = new UserModel({
@@ -57,7 +57,7 @@ router.post("/signup", (req, res) => {
       user.save(err => {
         if (err)
           return error(res, err)
-        return success(res, null, "Create new user successfully")
+        return success(res, null, "Tạo tài khoản thành công")
       });
     });
   });
@@ -73,10 +73,10 @@ router.post("/login", function (req, res, next) {
         return err(res, err)
 
       if (!user)
-        return fail(res, "Account does not exist")
+        return fail(res, "Tài khoản không tồn tại")
 
       if (user.active == false)
-        return fail(res, "Account is not active")
+        return fail(res, "Tài khoản chưa được kích hoạt")
 
       bcrypt.compare(req.body.password, user.password, (err, result) => {
         if (result) {
@@ -96,7 +96,7 @@ router.post("/login", function (req, res, next) {
         } else
           return res.json({
             success: false,
-            message: "Password is wrong"
+            message: "Sai mật khẩu"
           });
       });
     }
@@ -115,7 +115,7 @@ router.get("/user", function (req, res, next) {
     });
   }
   else
-    return fail(res, "Anonymous can't use this API")
+    return fail(res, "Ẩn danh không thể sử dụng API này")
 });
 
 router.get("/users", (req, res) => {
@@ -150,14 +150,14 @@ router.get("/users", (req, res) => {
 
 router.post("/users", (req, res) => {
   if (req.authz.role != "admin")
-    return fail(res, "Chỉ admin có thể create users")
+    return fail(res, "Chỉ admin có thể tạo tài khoản")
   UserModel.find({ email: req.body.email }, (err, data) => {
     if (err) {
       return error(res, err)
     }
 
     if (data.length > 0)
-      return fail(res, "User exists")
+      return fail(res, "Tài khoản đã tồn tại")
 
     bcrypt.hash(req.body.password, saltRounds, (err, hash) => {
       user = new UserModel({
@@ -171,7 +171,7 @@ router.post("/users", (req, res) => {
       user.save(err => {
         if (err)
           return error(res, err)
-        return success(res, null, "Create new user successfully")
+        return success(res, null, "Tạo tài khoản thành công")
       });
     });
   })
@@ -179,10 +179,10 @@ router.post("/users", (req, res) => {
 
 router.put("/users", (req, res) => {
   if (req.authz.role == "anony")
-    return fail(res, "Anonymous can't use this API")
+    return fail(res, "Ẩn danh không thể sử dụng API này")
   UserModel.findById(req.authz.uid, (err, user) => {
     if (err) return error(res, err)
-    if (!user) return fail(res, "User not found")
+    if (!user) return fail(res, "Tài khoản không tồn tại")
     if (req.body.name) user.name = req.body.name
     if (req.body.phone) user.phone = req.body.phone
     if (req.body.password) {
@@ -199,10 +199,10 @@ router.put("/users", (req, res) => {
 
 router.put("/users/:id", (req, res) => {
   if (req.authz.role != "admin")
-    return fail(res, "Chỉ admin có thể modify other user")
+    return fail(res, "Chỉ admin có thể chỉnh sửa tài khoản")
   UserModel.findById(req.params.id, (err, user) => {
     if (err) return error(res, err)
-    if (!user) return fail(res, "User not found")
+    if (!user) return fail(res, "Tài khoản không tồn tại")
     if (req.body.email) user.email = req.body.email
     if (req.body.name) user.name = req.body.name
     if (req.body.phone) user.phone = req.body.phone
@@ -225,16 +225,16 @@ router.put("/active", (req,res) => {
     return fail(res, "Chỉ admin có thể modify other user")
   UserModel.updateMany({active: false}, {active: true}, (err, r) => {
     if (err) return error(res, err)
-    return success(res, "Set active for " + r.nModified + " users")
+    return success(res, "Kích hoạt thành công " + r.nModified + " tài khoản")
   })
 })
 
 router.delete("/users/:id", (req, res) => {
   if (req.authz.role != "admin")
-    return fail(res, "Chỉ admin có thể delete user")
+    return fail(res, "Chỉ admin có thể xóa tài khoản")
   UserModel.deleteOne({ _id: req.params.id }, (err) => {
     if (err) return err(res, err)
-    return success(res, "Delete successfully")
+    return success(res, "Xóa tài khoản thành công")
   })
 })
 
