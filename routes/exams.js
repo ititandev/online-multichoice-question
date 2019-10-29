@@ -4,6 +4,7 @@ const ClassModel = require("../schema/ClassModel");
 const SubjectModel = require("../schema/SubjectModel");
 const ContentModel = require("../schema/ContentModel");
 const ExamModel = require("../schema/ExamModel");
+const AnswerModel = require("../schema/AnswerModel");
 const { success, error, fail } = require("../common")
 const bcrypt = require("bcrypt");
 const saltRounds = 10;
@@ -219,7 +220,42 @@ router.delete("/exams/:id", (req, res) => {
 router.post("/answers", (req, res) => {
     if (req.authz.role == "anony")
         return fail(res, "Vui lòng đăng nhập trước khi làm bài kiểm tra")
-    ExamModel.create({})
+    ExamModel.findById(req.body.examId, (err, exam) => {
+        if (err) return error(res, err)
+        if (!exam)
+            return fail(res, "Bài kiểm tra không tồn tại")
+        if (exam.password) {
+            if (!req.body.password)
+                return fail(res, "Vui lòng nhập mật khẩu bài kiểm tra")
+            bcrypt.compare(req.body.password, exam.password, (err, result) => {
+                if (err) return error(res, err)
+                if (result) {
+                    AnswerModel.create({
+                        remain: exam.time,
+                        answer: "",
+                        userId: req.authz.uid,
+                        examId: req.body.examId
+                    }, (err, a) => {
+                        if (err) return error(res, err)
+                        return success(res, a, "Bắt đầu tính thời gian làm bài")
+                    })
+                }
+                else
+                    return fail(res, "Sai mật khẩu")
+            })
+        } else {
+            AnswerModel.create({
+                remain: exam.time,
+                answer: "",
+                userId: req.authz.uid,
+                examId: req.body.examId
+            }, (err, a) => {
+                if (err) return error(res, err)
+                return success(res, a, "Bắt đầu tính thời gian làm bài")
+            })
+        }
+
+    })
 })
 
 module.exports = router;

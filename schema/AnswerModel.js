@@ -5,10 +5,10 @@ const AnswerSchema = new Schema({
     end: { type: Date },
     point: { type: Number, default: 0, required: true },
     remain: { type: Number, required: true },
-    answer: { type: String, required: true, default: "" },
-    userId: { type: String, ref: 'users' },
+    answer: { type: String },
+    userId: { type: String, ref: 'users', required: true },
     examId: { type: Schema.Types.ObjectId, ref: 'exams', required: true }
 });
-const AnswerModel = mongoose.model('Answers', AnswerSchema);
+const AnswerModel = mongoose.model('answers', AnswerSchema);
 
 module.exports = AnswerModel
