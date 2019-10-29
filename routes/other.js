@@ -7,7 +7,7 @@ router.get("/homepage", (req, res) => {
     ConfigModel.findOne({ name: "homepage" }, (err, config) => {
         if (err) return error(res, err)
         if (!config)
-            return success(res, " ", "Not configured")
+            return success(res, " ", "Chưa cài đặt")
         else
             return success(res, config.data)
     })
@@ -15,7 +15,7 @@ router.get("/homepage", (req, res) => {
 
 router.put("/homepage", (req, res) => {
     if (req.authz.role != "admin")
-        return fail(res, "Chỉ admin có thể set homepage")
+        return fail(res, "Chỉ admin có thể cài đặt nội dung trang chủ")
 
     ConfigModel.findOne({ name: "homepage" }, (err, config) => {
         if (err) return error(res, err)
