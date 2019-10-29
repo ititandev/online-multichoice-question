@@ -109,16 +109,20 @@ router.get("/contents/:id", (req, res) => {
 router.post("/contents", (req, res) => {
     if (req.authz.role != "admin")
         return fail(res, "Only admin can create contents")
-    ContentModel.find({ name: req.body.name, subjectId: req.body.subjectId }, (err, contents) => {
+    SubjectModel.find({ _id: subjectId }, (err, subjects) => {
         if (err) return error(res, err)
-        if (contents.length > 0)
-            return fail(res, "Content exists")
-        ContentModel.create({ name: req.body.name, subjectId: req.body.subjectId }, (err, c) => {
+        if (subjects.length < 1)
+            return fail(res, "Môn học không tồn tại")
+        ContentModel.find({ name: req.body.name, subjectId: req.body.subjectId }, (err, contents) => {
             if (err) return error(res, err)
-            return success(res, c)
+            if (contents.length > 0)
+                return fail(res, "Content exists")
+            ContentModel.create({ name: req.body.name, subjectId: req.body.subjectId }, (err, c) => {
+                if (err) return error(res, err)
+                return success(res, c)
+            })
         })
     })
-
 })
 
 router.put("/contents/:id", (req, res) => {
