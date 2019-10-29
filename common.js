@@ -14,7 +14,7 @@ function success(res, data, message) {
 
 function error(res, error, message) {
     if (!message)
-        message = "Some error happen"
+        message = "Đã có lỗi xảy ra"
     if (error)
         console.log(error);
     else 
