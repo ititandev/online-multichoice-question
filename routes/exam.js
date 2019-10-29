@@ -155,26 +155,30 @@ router.get("/exams/:id", (req, res) => {
 router.post("/exams", (req, res) => {
     if (req.authz.role != "admin")
         return fail(res, "Only admin can create exams")
-    ExamModel.find({ name: req.body.name, contentId: req.body.contentId }, (err, exams) => {
+    ContentModel.find({ _id: req.body.contentId }, (err, contents) => {
         if (err) return error(res, err)
-        if (exams.length > 0)
-            return fail(res, "Exam exists")
-        if (req.body.password) {
-            bcrypt.hash(req.body.password, saltRounds, (err, hash) => {
-                if (err) return error(res, err)
-                req.body.password = hash
-                ExamModel.create(req.body, (err, exam) => {
+        if (contents.length < 1)
+            return fail(res, "Chủ đề không tồn tài")
+        ExamModel.find({ name: req.body.name, contentId: req.body.contentId }, (err, exams) => {
+            if (err) return error(res, err)
+            if (exams.length > 0)
+                return fail(res, "Exam exists")
+            if (req.body.password) {
+                bcrypt.hash(req.body.password, saltRounds, (err, hash) => {
                     if (err) return error(res, err)
-                    return success(res, exam)
+                    req.body.password = hash
+                    ExamModel.create(req.body, (err, exam) => {
+                        if (err) return error(res, err)
+                        return success(res, exam)
+                    })
                 })
-            })
-        } else
-            ExamModel.create(req.body, (err, c) => {
-                if (err) return error(res, err)
-                return success(res, c)
-            })
+            } else
+                ExamModel.create(req.body, (err, c) => {
+                    if (err) return error(res, err)
+                    return success(res, c)
+                })
+        })
     })
-
 })
 
 router.put("/exams/:id", (req, res) => {
