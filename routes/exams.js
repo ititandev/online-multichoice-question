@@ -152,6 +152,53 @@ router.delete("/contents/:id", (req, res) => {
 
 
 
+router.get("/exams", (req, res) => {
+    if (req.authz.role != 'admin')
+        return fail(res, "Chỉ admin có thể xóa chủ đề")
+    if (!req.query.limit)
+        req.query.limit = 10
+    if (!req.query.page)
+        req.query.page = 1
+    ExamModel.find()
+        .select("name datetime contentId")
+        .populate({
+            path: 'contentId',
+            select: 'name subjectId',
+            populate: {
+                path: 'subjectId',
+                select: 'classId name',
+                populate: {
+                    path: 'classId',
+                    select: 'name'
+                }
+            }
+        })
+        .sort('-datetime')
+        .skip((req.query.page - 1) * req.query.limit)
+        .limit(parseInt(req.query.limit))
+        .exec((err, exams) => {
+            if (err) return error(res, err)
+            ExamModel.countDocuments({}, (err, totalPage) => {
+                if (err) return error(res, err)
+                totalPage = Math.ceil(totalPage / req.query.limit)
+                previous = req.query.page > 1 ? req.protocol + "://" + req.get("host") + "/api/exams?page=" + (Number(req.query.page) - 1) + "&limit=" + req.query.limit : null
+                next = req.query.page < totalPage ? req.protocol + "://" + req.get("host") + "/api/exams?page=" + (Number(req.query.page) + 1) + "&limit=" + req.query.limit : null
+                exams = exams.map(element => {
+                    return {
+                        _id: element._id,
+                        name: element.name,
+                        contentName: element.contentId.name,
+                        subjectName: element.contentId.subjectId.name,
+                        className: element.contentId.subjectId.classId.name,
+                        datetime: element.datatime
+                    }
+                })
+                data = { totalPage: totalPage, page: req.query.page, data: exams, previous: previous, next: next }
+                return success(res, data)
+            })
+        })
+})
+
 router.get("/exams/:id", (req, res) => {
     ExamModel.find({ contentId: req.params.id })
         // .populate("contentId")
