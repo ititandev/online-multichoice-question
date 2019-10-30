@@ -154,7 +154,7 @@ router.delete("/contents/:id", (req, res) => {
 
 router.get("/exams", (req, res) => {
     if (req.authz.role != 'admin')
-        return fail(res, "Chỉ admin có thể xóa chủ đề")
+        return fail(res, "Chỉ admin có thể liệt kê tất cả các bài kiểm tra")
     if (!req.query.limit)
         req.query.limit = 10
     if (!req.query.page)
