@@ -179,7 +179,7 @@ router.post("/exams", (req, res) => {
             if (err) return error(res, err)
             if (exams.length > 0)
                 return fail(res, "Bài kiểm tra đã tồn tại")
-            req.body.answer = req.body.answer.replace(/ /g, '')
+            req.body.answer = req.body.answer.toUpperCase().replace(/[^ABCD]/g, '')
             req.body.total = req.body.answer.length
             if (req.body.password) {
                 bcrypt.hash(req.body.password, saltRounds, (err, hash) => {
