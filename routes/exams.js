@@ -190,7 +190,7 @@ router.get("/exams", (req, res) => {
                         contentName: element.contentId.name,
                         subjectName: element.contentId.subjectId.name,
                         className: element.contentId.subjectId.classId.name,
-                        datetime: element.datatime
+                        datetime: element.datetime,
                     }
                 })
                 data = { totalPage: totalPage, page: req.query.page, data: exams, previous: previous, next: next }
