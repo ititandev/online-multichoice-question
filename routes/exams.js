@@ -227,7 +227,7 @@ router.get("/exams/:id", (req, res) => {
 router.get("/exams/contents/:id", (req, res) => {
     ExamModel.find({ contentId: req.params.id })
         // .populate("contentId")
-        .select("name time total note datetime password")
+        .select("name time total datetime password")
         .exec((err, exams) => {
             if (err) return error(res, err)
             exams.forEach(element => {
