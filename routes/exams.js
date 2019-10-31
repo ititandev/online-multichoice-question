@@ -275,33 +275,19 @@ router.post("/answers", (req, res) => {
         if (exam.password) {
             if (!req.body.password)
                 return fail(res, "Vui lòng nhập mật khẩu bài kiểm tra")
-            bcrypt.compare(req.body.password, exam.password, (err, result) => {
-                if (err) return error(res, err)
-                if (result) {
-                    AnswerModel.create({
-                        remain: exam.time,
-                        answer: "",
-                        userId: req.authz.uid,
-                        examId: req.body.examId
-                    }, (err, a) => {
-                        if (err) return error(res, err)
-                        return success(res, a, "Bắt đầu tính thời gian làm bài")
-                    })
-                }
-                else
-                    return fail(res, "Sai mật khẩu")
-            })
-        } else {
-            AnswerModel.create({
-                remain: exam.time,
-                answer: "",
-                userId: req.authz.uid,
-                examId: req.body.examId
-            }, (err, a) => {
-                if (err) return error(res, err)
-                return success(res, a, "Bắt đầu tính thời gian làm bài")
-            })
+            if (req.body.password !== exam.password)
+                return fail(res, "Sai mật khẩu")
         }
+        AnswerModel.create({
+            remain: exam.time,
+            answer: "",
+            userId: req.authz.uid,
+            examId: req.body.examId
+        }, (err, a) => {
+            if (err) return error(res, err)
+            return success(res, a, "Bắt đầu tính thời gian làm bài")
+        })
+
 
     })
 })
