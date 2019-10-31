@@ -26,7 +26,9 @@ router.get("/classes/subjects", (req, res) => {
                 (rv[x.classId.name] = rv[x.classId.name] || []).push({ _id: x._id, name: x.name });
                 return rv;
             }, {});
-            return success(res, subjects)
+            return success(res, Object.keys(subjects).map((key) => {
+                return { className: key, subjects: subjects[key] };
+            }))
         })
 })
 
