@@ -18,20 +18,16 @@ router.get("/classes", (req, res) => {
 
 router.get("/classes/subjects", (req, res) => {
     SubjectModel.find()
-    .select("_id name")
-    .populate("classId", "_id name")
-    .exec((err, subjects) => {
-        if (err) return error(res, err)
-        subjects = subjects.map((element)=> {
-            return {
-                classId: element.classId._id,
-                className: element.classId.name,
-                subjectId: element._id,
-                subjectName: element.name
-            }
+        .select("_id name")
+        .populate("classId", "_id name")
+        .exec((err, subjects) => {
+            if (err) return error(res, err)
+            subjects = subjects.reduce(function (rv, x) {
+                (rv[x.classId.name] = rv[x.classId.name] || []).push({ _id: x._id, name: x.name });
+                return rv;
+            }, {});
+            return success(res, subjects)
         })
-        return success(res, subjects)
-    })
 })
 
 router.post("/classes", (req, res) => {
