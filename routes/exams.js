@@ -160,7 +160,7 @@ router.get("/exams", (req, res) => {
     if (!req.query.page)
         req.query.page = 1
     ExamModel.find()
-        .select("name datetime contentId")
+        .select("name datetime contentId password")
         .populate({
             path: 'contentId',
             select: 'name subjectId',
@@ -191,6 +191,7 @@ router.get("/exams", (req, res) => {
                         subjectName: element.contentId.subjectId.name,
                         className: element.contentId.subjectId.classId.name,
                         datetime: element.datetime,
+                        password: (element.password) ? true : false
                     }
                 })
                 data = { totalPage: totalPage, page: req.query.page, data: exams, previous: previous, next: next }
@@ -287,8 +288,6 @@ router.post("/answers", (req, res) => {
             if (err) return error(res, err)
             return success(res, a, "Bắt đầu tính thời gian làm bài")
         })
-
-
     })
 })
 
