@@ -200,6 +200,15 @@ router.get("/exams", (req, res) => {
 })
 
 router.get("/exams/:id", (req, res) => {
+    if (req.authz.role != "admin")
+        return fail(res, "Chỉ admin có thể liệt kê tất cả các bài kiểm tra")
+    ExamModel.findById(req.params.id, (err, exams) => {
+        if (err) return error(res, err)
+        return success(res, exams)
+    })
+})
+
+router.get("/exams/contents/:id", (req, res) => {
     ExamModel.find({ contentId: req.params.id })
         // .populate("contentId")
         .select("name time total note datetime password")
@@ -228,20 +237,10 @@ router.post("/exams", (req, res) => {
                 return fail(res, "Bài kiểm tra đã tồn tại")
             req.body.answer = req.body.answer.toUpperCase().replace(/[^ABCD]/g, '')
             req.body.total = req.body.answer.length
-            if (req.body.password) {
-                bcrypt.hash(req.body.password, saltRounds, (err, hash) => {
-                    if (err) return error(res, err)
-                    req.body.password = hash
-                    ExamModel.create(req.body, (err, exam) => {
-                        if (err) return error(res, err)
-                        return success(res, exam)
-                    })
-                })
-            } else
-                ExamModel.create(req.body, (err, c) => {
-                    if (err) return error(res, err)
-                    return success(res, c)
-                })
+            ExamModel.create(req.body, (err, exam) => {
+                if (err) return error(res, err)
+                return success(res, exam)
+            })
         })
     })
 })
