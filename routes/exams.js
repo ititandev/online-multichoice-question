@@ -5,15 +5,32 @@ const SubjectModel = require("../schema/SubjectModel");
 const ContentModel = require("../schema/ContentModel");
 const ExamModel = require("../schema/ExamModel");
 const AnswerModel = require("../schema/AnswerModel");
-const { success, error, fail } = require("../common")
-const bcrypt = require("bcrypt");
-const saltRounds = 10;
+const { success, error, fail } = require("../common");
+
 
 
 router.get("/classes", (req, res) => {
     ClassModel.find((err, classes) => {
         if (err) return error(res, err)
         return success(res, classes)
+    })
+})
+
+router.get("/classes/subjects", (req, res) => {
+    SubjectModel.find()
+    .select("_id name")
+    .populate("classId", "_id name")
+    .exec((err, subjects) => {
+        if (err) return error(res, err)
+        subjects = subjects.map((element)=> {
+            return {
+                classId: element.classId._id,
+                className: element.classId.name,
+                subjectId: element._id,
+                subjectName: element.name
+            }
+        })
+        return success(res, subjects)
     })
 })
 
