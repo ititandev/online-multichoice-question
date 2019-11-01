@@ -216,12 +216,23 @@ router.get("/exams", (req, res) => {
 })
 
 router.get("/exams/:id", (req, res) => {
-    if (req.authz.role != "admin")
-        return fail(res, "Chỉ admin có thể liệt kê tất cả các bài kiểm tra")
-    ExamModel.findById(req.params.id, (err, exams) => {
-        if (err) return error(res, err)
-        return success(res, exams)
-    })
+    if (req.authz.role == "admin") {
+        ExamModel.findById(req.params.id, (err, exams) => {
+            if (err) return error(res, err)
+            return success(res, exams)
+        })
+    }
+    else {
+        ExamModel.findById(req.params.id, "name time total datetime password", (err, exam) => {
+            if (err) return error(res, err);
+                if (exam.password)
+                exam.password = true
+                else
+                exam.password = false
+            return success(res, exam)
+        })
+    }
+
 })
 
 router.get("/exams/contents/:id", (req, res) => {
