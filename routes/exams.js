@@ -225,9 +225,9 @@ router.get("/exams/:id", (req, res) => {
     else {
         ExamModel.findById(req.params.id, "name time total datetime password", (err, exam) => {
             if (err) return error(res, err);
-                if (exam.password)
+            if (exam.password)
                 exam.password = true
-                else
+            else
                 exam.password = false
             return success(res, exam)
         })
@@ -295,7 +295,7 @@ router.delete("/exams/:id", (req, res) => {
 router.post("/answers", (req, res) => {
     if (req.authz.role == "anony")
         return fail(res, "Vui lòng đăng nhập trước khi làm bài kiểm tra")
-    ExamModel.findById(req.body.examId, (err, exam) => {
+    ExamModel.findById(req.body.examId, "name time examUrl password contentId total datetime", (err, exam) => {
         if (err) return error(res, err)
         if (!exam)
             return fail(res, "Bài kiểm tra không tồn tại")
@@ -305,6 +305,7 @@ router.post("/answers", (req, res) => {
             if (req.body.password !== exam.password)
                 return fail(res, "Sai mật khẩu")
         }
+        exam.password = undefined
         AnswerModel.create({
             remain: exam.time,
             answer: "",
@@ -312,7 +313,7 @@ router.post("/answers", (req, res) => {
             examId: req.body.examId
         }, (err, a) => {
             if (err) return error(res, err)
-            return success(res, a, "Bắt đầu tính thời gian làm bài")
+            return success(res, exam, "Bắt đầu tính thời gian làm bài")
         })
     })
 })
