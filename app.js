@@ -47,6 +47,7 @@ app.use((req, res, next) => {
     next();
   })
     .catch(err => {
+      if (err) console.error(err)
       req.authz = { role: "anony" }
       next();
     })
