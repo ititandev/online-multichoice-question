@@ -34,6 +34,17 @@ router.get("/lectures", (req, res) => {
                 totalPage = Math.ceil(totalPage / req.query.limit)
                 previous = req.query.page > 1 ? req.protocol + "://" + req.get("host") + "/api/lectures?page=" + (Number(req.query.page) - 1) + "&limit=" + req.query.limit : null
                 next = req.query.page < totalPage ? req.protocol + "://" + req.get("host") + "/api/lectures?page=" + (Number(req.query.page) + 1) + "&limit=" + req.query.limit : null
+                lectures = lectures.map(element => {
+                    return {
+                        _id: element._id,
+                        name: element.name,
+                        lectureUrl: element.lectureUrl,
+                        contentName: element.contentId.name,
+                        subjectName: element.contentId.subjectId.name,
+                        className: element.contentId.subjectId.classId.name,
+                        datetime: element.datetime,
+                    }
+                })
                 data = { totalPage: totalPage, page: req.query.page, data: lectures, previous: previous, next: next }
                 return success(res, data)
             })
@@ -49,10 +60,25 @@ router.get("/lectures/:id", (req, res) => {
 })
 
 router.get("/lectures/contents/:id", (req, res) => {
+    if (!req.query.limit)
+        req.query.limit = 10
+    if (!req.query.page)
+        req.query.page = 1
+
     LectureModel.find({ contentId: req.params.id })
+        .sort('-datetime')
+        .skip((req.query.page - 1) * req.query.limit)
+        .limit(parseInt(req.query.limit))
         .exec((err, lectures) => {
             if (err) return error(res, err)
-            return success(res, lectures)
+            LectureModel.countDocuments({ contentId: req.params.id }, (err, totalPage) => {
+                if (err) return error(res, err)
+                totalPage = Math.ceil(totalPage / req.query.limit)
+                previous = req.query.page > 1 ? req.protocol + "://" + req.get("host") + "/api/lectures/contents/" + req.params.id + "?page=" + (Number(req.query.page) - 1) + "&limit=" + req.query.limit : null
+                next = req.query.page < totalPage ? req.protocol + "://" + req.get("host") + "/api/lectures/contents/" + req.params.id + "?page=" + (Number(req.query.page) + 1) + "&limit=" + req.query.limit : null
+                data = { totalPage: totalPage, page: req.query.page, data: lectures, previous: previous, next: next }
+                return success(res, data)
+            })
         })
 })
 
