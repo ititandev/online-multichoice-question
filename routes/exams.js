@@ -236,18 +236,49 @@ router.get("/exams/:id", (req, res) => {
 })
 
 router.get("/exams/contents/:id", (req, res) => {
+    if (!req.query.limit)
+        req.query.limit = 10
+    if (!req.query.page)
+        req.query.page = 1
+
     ExamModel.find({ contentId: req.params.id })
-        // .populate("contentId")
-        .select("name time total datetime password")
+        .select("name datetime contentId password")
+        .populate({
+            path: 'contentId',
+            select: 'name subjectId',
+            populate: {
+                path: 'subjectId',
+                select: 'classId name',
+                populate: {
+                    path: 'classId',
+                    select: 'name'
+                }
+            }
+        })
+        .sort('-datetime')
+        .skip((req.query.page - 1) * req.query.limit)
+        .limit(parseInt(req.query.limit))
         .exec((err, exams) => {
             if (err) return error(res, err)
-            exams.forEach(element => {
-                if (element.password)
-                    element.password = true
-                else
-                    element.password = false
-            });
-            return success(res, exams)
+            ExamModel.countDocuments({ contentId: req.params.id }, (err, totalPage) => {
+                if (err) return error(res, err)
+                totalPage = Math.ceil(totalPage / req.query.limit)
+                previous = req.query.page > 1 ? req.protocol + "://" + req.get("host") + "/api/exams/contents/" + req.params.id + "?page=" + (Number(req.query.page) - 1) + "&limit=" + req.query.limit : null
+                next = req.query.page < totalPage ? req.protocol + "://" + req.get("host") + "/api/exams/contents/" + req.params.id + "?page=" + (Number(req.query.page) + 1) + "&limit=" + req.query.limit : null
+                exams = exams.map(element => {
+                    return {
+                        _id: element._id,
+                        name: element.name,
+                        contentName: element.contentId.name,
+                        subjectName: element.contentId.subjectId.name,
+                        className: element.contentId.subjectId.classId.name,
+                        datetime: element.datetime,
+                        password: (element.password) ? true : false
+                    }
+                })
+                data = { totalPage: totalPage, page: req.query.page, data: exams, previous: previous, next: next }
+                return success(res, data)
+            })
         })
 })
 
@@ -291,7 +322,7 @@ router.delete("/exams/:id", (req, res) => {
 })
 
 
-router.get("/answers", (req, res)=> {
+router.get("/answers", (req, res) => {
     return;
 })
 
