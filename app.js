@@ -7,6 +7,7 @@ const { verifyJWTToken } = require("./auth.js");
 var usersRouter = require("./routes/users");
 const otherRouter = require("./routes/other")
 const examRouter = require("./routes/exams")
+const lectureRouter = require("./routes/lectures")
 
 require('dotenv').config();
 var app = express();
@@ -54,8 +55,9 @@ app.use((req, res, next) => {
 })
 
 app.use("/api/", usersRouter);
-app.use("/api/", otherRouter)
-app.use("/api/", examRouter)
+app.use("/api/", otherRouter);
+app.use("/api/", examRouter);
+app.use("/api/", lectureRouter);
 
 
 

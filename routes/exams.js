@@ -291,6 +291,9 @@ router.delete("/exams/:id", (req, res) => {
 })
 
 
+router.get("/answers", (req, res)=> {
+    return;
+})
 
 router.post("/answers", (req, res) => {
     if (req.authz.role == "anony")
