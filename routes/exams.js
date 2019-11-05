@@ -4,7 +4,7 @@ const ContentModel = require("../schema/ContentModel");
 const ExamModel = require("../schema/ExamModel");
 const AnswerModel = require("../schema/AnswerModel");
 const { success, error, fail } = require("../common");
-
+var ObjectId = require('mongoose').Types.ObjectId; 
 
 
 router.get("/exams", (req, res) => {
@@ -56,49 +56,45 @@ router.get("/exams", (req, res) => {
 })
 
 router.get("/exams/:id", (req, res) => {
-    if (req.authz.role == "admin") {
-        ExamModel.findById(req.params.id, (err, exams) => {
-            if (err) return error(res, err)
-            return success(res, exams)
-        })
+    if (req.authz.role == "anony") {
+        return fail(res, "Vui lòng đăng nhập trước khi thực hiện")
     }
-    else if (req.authz.role == "user") {
+    else {
         ExamModel.findById(req.params.id, "name time total datetime password", (err, exam) => {
             if (err) return error(res, err);
             if (exam.password)
-                exam.password = true
+                exam._doc.password = true
             else
-                exam.password = false
+                exam._doc.password = false
             AnswerModel.countDocuments({
-                userId: req.authz.uid,
-                examId: req.params.id,
+                userId: new ObjectId(req.authz.uid),
+                examId: new ObjectId(req.params.id),
                 status: "doing"
             }, (err, doing) => {
+                console.log(doing)
                 if (err) return error(res, err)
-                if (doing.length > 0) {
-                    exam.status = "doing"
+                if (doing > 0) {
+                    exam._doc.status = "doing"
                     return success(res, exam)
                 }
                 AnswerModel.countDocuments({
-                    userId: req.authz.uid,
-                    examId: req.params.id,
+                    userId: new ObjectId(req.authz.uid),
+                    examId: new ObjectId(req.params.id),
                     status: "done"
                 }, (err, done) => {
                     if (err) return error(res, err)
-                    if (done.length > 0) {
-                        exam.status = "done"
+                    if (done > 0) {
+                        exam._doc.status = "done"
                         return success(res, exam)
                     }
                     else {
-                        exam.status = null
+                        exam._doc.status = null
                         return success(res, exam)
                     }
                 })
             })
         })
     }
-    else
-        return fail(res, "Vui lòng đăng nhập trước khi thực hiện")
 })
 
 router.get("/exams/contents/:id", (req, res) => {
