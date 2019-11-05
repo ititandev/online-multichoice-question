@@ -66,6 +66,18 @@ router.get("/lectures/contents/:id", (req, res) => {
         req.query.page = 1
 
     LectureModel.find({ contentId: req.params.id })
+        .populate({
+            path: 'contentId',
+            select: 'name subjectId',
+            populate: {
+                path: 'subjectId',
+                select: 'classId name',
+                populate: {
+                    path: 'classId',
+                    select: 'name'
+                }
+            }
+        })
         .sort('-datetime')
         .skip((req.query.page - 1) * req.query.limit)
         .limit(parseInt(req.query.limit))
@@ -76,6 +88,17 @@ router.get("/lectures/contents/:id", (req, res) => {
                 totalPage = Math.ceil(totalPage / req.query.limit)
                 previous = req.query.page > 1 ? req.protocol + "://" + req.get("host") + "/api/lectures/contents/" + req.params.id + "?page=" + (Number(req.query.page) - 1) + "&limit=" + req.query.limit : null
                 next = req.query.page < totalPage ? req.protocol + "://" + req.get("host") + "/api/lectures/contents/" + req.params.id + "?page=" + (Number(req.query.page) + 1) + "&limit=" + req.query.limit : null
+                lectures = lectures.map(element => {
+                    return {
+                        _id: element._id,
+                        name: element.name,
+                        lectureUrl: element.lectureUrl,
+                        contentName: element.contentId.name,
+                        subjectName: element.contentId.subjectId.name,
+                        className: element.contentId.subjectId.classId.name,
+                        datetime: element.datetime,
+                    }
+                })
                 data = { totalPage: totalPage, page: req.query.page, data: lectures, previous: previous, next: next }
                 return success(res, data)
             })
