@@ -6,6 +6,7 @@ const mongoose = require("mongoose");
 const { verifyJWTToken } = require("./auth.js");
 var usersRouter = require("./routes/users");
 const otherRouter = require("./routes/other")
+const classRouter = require("./routes/classes")
 const examRouter = require("./routes/exams")
 const lectureRouter = require("./routes/lectures")
 
@@ -41,14 +42,14 @@ app.use(express.static(path.join(__dirname, "public")));
 
 
 app.use((req, res, next) => {
-  verifyJWTToken(req.header("Authorization")).then(payload => {
-    if (!payload.role)
-      payload.role = "anony"
-    req.authz = payload
-    next();
-  })
+  verifyJWTToken(req.header("Authorization"))
+    .then(payload => {
+      if (!payload.role)
+        payload.role = "anony"
+      req.authz = payload
+      next();
+    })
     .catch(err => {
-      if (err) console.error(err)
       req.authz = { role: "anony" }
       next();
     })
@@ -56,6 +57,7 @@ app.use((req, res, next) => {
 
 app.use("/api/", usersRouter);
 app.use("/api/", otherRouter);
+app.use("/api/", classRouter);
 app.use("/api/", examRouter);
 app.use("/api/", lectureRouter);
 
