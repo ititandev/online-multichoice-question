@@ -6,6 +6,7 @@ const AnswerSchema = new Schema({
     point: { type: Number, default: 0, required: true },
     remain: { type: Number, required: true },
     answer: { type: String },
+    status: { type: String, required: true },
     userId: { type: String, ref: 'users', required: true },
     examId: { type: Schema.Types.ObjectId, ref: 'exams', required: true }
 });

@@ -62,17 +62,47 @@ router.get("/exams/:id", (req, res) => {
             return success(res, exams)
         })
     }
-    else {
+    else if (req.authz.role == "user") {
         ExamModel.findById(req.params.id, "name time total datetime password", (err, exam) => {
             if (err) return error(res, err);
             if (exam.password)
                 exam.password = true
             else
                 exam.password = false
-            return success(res, exam)
+            AnswerModel.countDocuments({
+                userId: req.authz.uid,
+                examId: req.params.id,
+                status: "doing"
+            }, (err, doing) => {
+                if (err) return error(res, err)
+                if (doing.length > 0) {
+                    exam.status = "doing"
+                    return success(res, exam)
+                }
+                AnswerModel.countDocuments({
+                    userId: req.authz.uid,
+                    examId: req.params.id,
+                    status: "done"
+                }, (err, done) => {
+                    if (err) return error(res, err)
+                    if (done.length > 0) {
+                        exam.status = "done"
+                        return success(res, exam)
+                    }
+                    else { 
+                        exam.status = null
+                        return success(res, exam) 
+                    }
+
+                })
+
+            })
+
+
         })
     }
-
+    else
+        return fail(res, "Vui lòng đăng nhập trước khi thực hiện")
 })
 
 router.get("/exams/contents/:id", (req, res) => {
