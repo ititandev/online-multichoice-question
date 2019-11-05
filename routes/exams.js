@@ -89,16 +89,12 @@ router.get("/exams/:id", (req, res) => {
                         exam.status = "done"
                         return success(res, exam)
                     }
-                    else { 
+                    else {
                         exam.status = null
-                        return success(res, exam) 
+                        return success(res, exam)
                     }
-
                 })
-
             })
-
-
         })
     }
     else
@@ -214,7 +210,8 @@ router.post("/answers", (req, res) => {
             remain: exam.time,
             answer: "",
             userId: req.authz.uid,
-            examId: req.body.examId
+            examId: req.body.examId,
+            status: "doing"
         }, (err, a) => {
             if (err) return error(res, err)
             return success(res, exam, "Bắt đầu tính thời gian làm bài")
