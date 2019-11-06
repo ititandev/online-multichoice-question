@@ -251,12 +251,13 @@ router.post("/answers", (req, res) => {
 router.put("/answers/:id", (req, res) => {
     if (req.authz.role == "anony")
         return fail(res, "Vui lòng đăng nhập trước khi làm bài kiểm tra")
-    if (req.body.status)
+    if (!req.body.status)
         req.body.status = "doing"
-
 
     AnswerModel.findById(req.params.id, (err, answer) => {
         if (err) return error(res, err)
+        if (answer.status === "done")
+            return fail(res, "Không được phép cập nhật bài làm đã hoàn thành")
         if (req.body.status == "done") {
             req.body.end = Date.now()
             req.body.remain = 0
@@ -269,19 +270,19 @@ router.put("/answers/:id", (req, res) => {
                 for (let i = 0; i < length; i++) {
                     req.body.point += (req.body.answer[i] === exam.answer[i])
                 }
-                AnswerModel.updateOne({_id: req.params.id}, req.body, (err, answers) => {
+                AnswerModel.updateOne({ _id: req.params.id }, req.body, (err, answers) => {
                     if (err) return error(res, err)
-                    return success(res, answers, "Nộp bài thành công")
+                    return success(res, { point: req.body.point }, "Nộp bài thành công")
                 })
             })
         } else {
-            AnswerModel.updateOne({_id: req.params.id}, req.body, (err, answers) => {
+            AnswerModel.updateOne({ _id: req.params.id }, req.body, (err, answers) => {
                 if (err) return error(res, err)
-                return success(res, answers, "Cập nhật bài làm thành công")
+                return success(res, null, "Cập nhật bài làm thành công")
             })
         }
     })
-    
-
 })
+
+
 module.exports = router;
