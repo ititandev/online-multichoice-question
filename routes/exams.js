@@ -56,6 +56,7 @@ router.get("/exams", (req, res) => {
 })
 
 router.get("/exams/:id", (req, res) => {
+    //TODO: update status
     if (req.authz.role == "anony") {
         return fail(res, "Vui lòng đăng nhập trước khi thực hiện")
     }
@@ -193,6 +194,19 @@ router.get("/answers", (req, res) => {
     return;
 })
 
+router.get("/answers/exams/:id", (req, res) => {
+    if (req.authz.role == "anony")
+        return fail(res, "Vui lòng đăng nhập trước khi thực hiện")
+    AnswerModel.find({
+        userId: new ObjectId(req.authz.uid),
+        examId: new ObjectId(req.params.id)
+    }, (err, answers) => {
+        //TODO: update status
+        if (err) return error(res, err)
+        return success(res, answers)
+    })
+})
+
 router.post("/answers", (req, res) => {
     if (req.authz.role == "anony")
         return fail(res, "Vui lòng đăng nhập trước khi làm bài kiểm tra")
@@ -234,9 +248,40 @@ router.post("/answers", (req, res) => {
     })
 })
 
-router.put("/answers", (req, res) => {
+router.put("/answers/:id", (req, res) => {
     if (req.authz.role == "anony")
         return fail(res, "Vui lòng đăng nhập trước khi làm bài kiểm tra")
+    if (req.body.status)
+        req.body.status = "doing"
+
+
+    AnswerModel.findById(req.params.id, (err, answer) => {
+        if (err) return error(res, err)
+        if (req.body.status == "done") {
+            req.body.end = Date.now()
+            req.body.remain = 0
+            req.body.answer = req.body.answer.toUpperCase()
+            req.body.point = 0
+
+            ExamModel.findById(answer.examId, (err, exam) => {
+                if (err) return error(res, err)
+                length = Math.min(req.body.answer.length, exam.answer.length)
+                for (let i = 0; i < length; i++) {
+                    req.body.point += (req.body.answer[i] === exam.answer[i])
+                }
+                AnswerModel.updateOne({_id: req.params.id}, req.body, (err, answers) => {
+                    if (err) return error(res, err)
+                    return success(res, answers, "Nộp bài thành công")
+                })
+            })
+        } else {
+            AnswerModel.updateOne({_id: req.params.id}, req.body, (err, answers) => {
+                if (err) return error(res, err)
+                return success(res, answers, "Cập nhật bài làm thành công")
+            })
+        }
+    })
+    
 
 })
 module.exports = router;
