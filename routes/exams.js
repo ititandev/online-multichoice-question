@@ -262,17 +262,22 @@ router.put("/answers/:id", (req, res) => {
             req.body.end = Date.now()
             req.body.remain = 0
             req.body.answer = req.body.answer.toUpperCase()
-            req.body.point = 0
+            req.body.correct = 0
 
             ExamModel.findById(answer.examId, (err, exam) => {
                 if (err) return error(res, err)
                 length = Math.min(req.body.answer.length, exam.answer.length)
                 for (let i = 0; i < length; i++) {
-                    req.body.point += (req.body.answer[i] === exam.answer[i])
+                    req.body.correct += (req.body.answer[i] === exam.answer[i])
                 }
+                req.body.point = Math.round((req.body.correct / exam.total) * 100) / 100
                 AnswerModel.updateOne({ _id: req.params.id }, req.body, (err, answers) => {
                     if (err) return error(res, err)
-                    return success(res, { point: req.body.point }, "Nộp bài thành công")
+                    return success(res, {
+                        correct: req.body.correct,
+                        total: exam.total,
+                        point: req.body.point
+                    }, "Nộp bài thành công")
                 })
             })
         } else {

@@ -3,6 +3,7 @@ const Schema = mongoose.Schema;
 const AnswerSchema = new Schema({
     start: { type: Date, default: Date.now, required: true },
     end: { type: Date },
+    correct: {type: Number, default: 0, require: true},
     point: { type: Number, default: 0, required: true },
     remain: { type: Number, required: true },
     answer: { type: String },
