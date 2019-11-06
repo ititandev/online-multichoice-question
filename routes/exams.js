@@ -4,7 +4,7 @@ const ContentModel = require("../schema/ContentModel");
 const ExamModel = require("../schema/ExamModel");
 const AnswerModel = require("../schema/AnswerModel");
 const { success, error, fail } = require("../common");
-var ObjectId = require('mongoose').Types.ObjectId; 
+var ObjectId = require('mongoose').Types.ObjectId;
 
 
 router.get("/exams", (req, res) => {
@@ -71,7 +71,6 @@ router.get("/exams/:id", (req, res) => {
                 examId: new ObjectId(req.params.id),
                 status: "doing"
             }, (err, doing) => {
-                console.log(doing)
                 if (err) return error(res, err)
                 if (doing > 0) {
                     exam._doc.status = "doing"
@@ -104,7 +103,7 @@ router.get("/exams/contents/:id", (req, res) => {
         req.query.page = 1
 
     ExamModel.find({ contentId: req.params.id })
-        .select("name datetime contentId password")
+        .select("name datetime contentId password total time")
         .populate({
             path: 'contentId',
             select: 'name subjectId',
@@ -134,6 +133,8 @@ router.get("/exams/contents/:id", (req, res) => {
                         contentName: element.contentId.name,
                         subjectName: element.contentId.subjectId.name,
                         className: element.contentId.subjectId.classId.name,
+                        total: element.total,
+                        time: element.time,
                         datetime: element.datetime,
                         password: (element.password) ? true : false
                     }
@@ -184,6 +185,10 @@ router.delete("/exams/:id", (req, res) => {
 })
 
 
+
+
+
+
 router.get("/answers", (req, res) => {
     return;
 })
@@ -202,17 +207,36 @@ router.post("/answers", (req, res) => {
                 return fail(res, "Sai mật khẩu")
         }
         exam.password = undefined
-        AnswerModel.create({
-            remain: exam.time,
-            answer: "",
-            userId: req.authz.uid,
-            examId: req.body.examId,
+        AnswerModel.find({
+            userId: new ObjectId(req.authz.uid),
+            examId: new ObjectId(req.body.examId),
             status: "doing"
-        }, (err, a) => {
+        }, (err, answers) => {
             if (err) return error(res, err)
-            return success(res, exam, "Bắt đầu tính thời gian làm bài")
+            if (answers.length > 0) {
+                return success(res, {
+                    answer: answers[0],
+                    exam
+                })
+            }
+            else
+                AnswerModel.create({
+                    remain: exam.time,
+                    answer: "",
+                    userId: req.authz.uid,
+                    examId: req.body.examId,
+                    status: "doing"
+                }, (err, answer) => {
+                    if (err) return error(res, err)
+                    return success(res, { answer, exam }, "Bắt đầu tính thời gian làm bài")
+                })
         })
     })
 })
 
+router.put("/answers", (req, res) => {
+    if (req.authz.role == "anony")
+        return fail(res, "Vui lòng đăng nhập trước khi làm bài kiểm tra")
+
+})
 module.exports = router;
