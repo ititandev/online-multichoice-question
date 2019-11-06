@@ -270,7 +270,7 @@ router.put("/answers/:id", (req, res) => {
                 for (let i = 0; i < length; i++) {
                     req.body.correct += (req.body.answer[i] === exam.answer[i])
                 }
-                req.body.point = Math.round((req.body.correct / exam.total) * 100) / 100
+                req.body.point = Math.round((req.body.correct / exam.total * 10) * 100) / 100
                 AnswerModel.updateOne({ _id: req.params.id }, req.body, (err, answers) => {
                     if (err) return error(res, err)
                     return success(res, {
