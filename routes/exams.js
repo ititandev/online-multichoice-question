@@ -64,7 +64,7 @@ router.get("/exams/:id", (req, res) => {
     })
 })
 
-router.get("/exam/:id", (err, res) => {
+router.get("/exam/:id", (req, res) => {
     //TODO: update status
     if (req.authz.role == "anony") {
         return fail(res, "Vui lòng đăng nhập trước khi thực hiện")
