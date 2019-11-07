@@ -59,6 +59,11 @@ router.get("/exams/:id", (req, res) => {
     //TODO: update status
     if (req.authz.role == "anony") {
         return fail(res, "Vui lòng đăng nhập trước khi thực hiện")
+    } else if (req.authz.role == "admin") {
+        ExamModel.findById(req.params.id, (err, exam)=> {
+            if (err) return error(res, err)
+            return success(res, exam)
+        })
     }
     else {
         ExamModel.findById(req.params.id, "name time total datetime password", (err, exam) => {
@@ -191,7 +196,26 @@ router.delete("/exams/:id", (req, res) => {
 
 
 router.get("/answers", (req, res) => {
-    return;
+    AnswerModel.find({ userId: new ObjectId(req.authz.uid) })
+        .select("start end point remain examId status")
+        .populate({
+            path: 'examId',
+            select: 'name subjectId',
+            populate: {
+                path: 'subjectId',
+                select: 'classId name',
+                populate: {
+                    path: 'classId',
+                    select: 'name'
+                }
+            }
+        })
+        .sort("-start")
+        .skip((req.query.page - 1) * req.query.limit)
+        .limit(parseInt(req.query.limit))
+        .exec((err, answers) => {
+            if (err) return error(res, err)
+        })
 })
 
 router.get("/answers/exams/:id", (req, res) => {
