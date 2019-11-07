@@ -56,16 +56,19 @@ router.get("/exams", (req, res) => {
 })
 
 router.get("/exams/:id", (req, res) => {
+    if (req.authz.role != "admin")
+        return fail(res, "Chỉ admin có thể thao tác")
+    ExamModel.findById(req.params.id, (err, exam) => {
+        if (err) return error(res, err)
+        return success(res, exam)
+    })
+})
+
+router.get("/exam/:id", (err, res) => {
     //TODO: update status
     if (req.authz.role == "anony") {
         return fail(res, "Vui lòng đăng nhập trước khi thực hiện")
-    } else if (req.authz.role == "admin") {
-        ExamModel.findById(req.params.id, (err, exam)=> {
-            if (err) return error(res, err)
-            return success(res, exam)
-        })
-    }
-    else {
+    } else {
         ExamModel.findById(req.params.id, "name time total datetime password", (err, exam) => {
             if (err) return error(res, err);
             if (exam.password)
