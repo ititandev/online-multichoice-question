@@ -57,7 +57,7 @@ router.get("/exams", (req, res) => {
 
 router.get("/exams/:id", (req, res) => {
     if (req.authz.role != "admin")
-        return fail(res, "Chỉ admin có thể thao tác")
+        return fail(res, "Chỉ admin có thể thực hiện")
     ExamModel.findById(req.params.id, (err, exam) => {
         if (err) return error(res, err)
         return success(res, exam)
@@ -222,6 +222,16 @@ router.get("/answers", (req, res) => {
 })
 
 router.get("/answers/exams/:id", (req, res) => {
+    if (req.authz.role != "admin")
+        return fail(res, "Chỉ admin có thể thực hiện")
+    AnswerModel.find({ examId: new ObjectId(req.params.id) }, (err, answers) => {
+        //TODO: update status
+        if (err) return error(res, err)
+        return success(res, answers)
+    })
+})
+
+router.get("/answer/exams/:id", (req, res) => {
     if (req.authz.role == "anony")
         return fail(res, "Vui lòng đăng nhập trước khi thực hiện")
     AnswerModel.find({
