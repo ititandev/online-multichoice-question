@@ -333,6 +333,7 @@ router.put("/answers/:id", (req, res) => {
                 AnswerModel.updateOne({ _id: req.params.id }, req.body, (err, answers) => {
                     if (err) return error(res, err)
                     return success(res, {
+                        _id: req.params.id,
                         correct: req.body.correct,
                         total: exam.total,
                         point: req.body.point
