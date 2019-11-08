@@ -209,6 +209,7 @@ router.get("/answer/:id", (req, res) => {
             return fail(res, "Chỉ được phép xem bài làm của bạn")
         ExamModel.findById(answer.examId, (err, exam) => {
             if (err) return error(res, err)
+            exam.password = undefined
             answer._doc.exam = exam
             return success(res, answer)
         })
