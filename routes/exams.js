@@ -244,18 +244,6 @@ router.get("/answer/exams/:id", (req, res) => {
     })
 })
 
-router.get("/answer", (req, res) => {
-    if (req.authz.role == "anony")
-        return fail(res, "Vui lòng đăng nhập trước khi thực hiện")
-    AnswerModel.find({
-        userId: new ObjectId(req.authz.uid)
-    }, (err, answers) => {
-        //TODO: update status
-        if (err) return error(res, err)
-        return success(res, answers)
-    })
-})
-
 router.post("/answers", (req, res) => {
     if (req.authz.role == "anony")
         return fail(res, "Vui lòng đăng nhập trước khi làm bài kiểm tra")
