@@ -240,7 +240,12 @@ router.get("/answer/exams/:id", (req, res) => {
     }, (err, answers) => {
         //TODO: update status
         if (err) return error(res, err)
-        return success(res, answers)
+        ExamModel.findById(req.params.id, (err, exam) => {
+            if (err) return error(res, err)
+            exam.password = undefined
+            answers._doc.exam = exam
+            return success(res, answers)
+        })
     })
 })
 
