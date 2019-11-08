@@ -198,6 +198,23 @@ router.delete("/exams/:id", (req, res) => {
 
 
 
+router.get("/answer/:id", (req, res) => {
+    if (req.authz.role == "anony")
+        return fail(res, "Vui lòng đăng nhập trước khi thực hiện")
+    AnswerModel.findById(req.params.id, (err, answer) => {
+        if (err) return error(res, err)
+        if (!answer)
+            return fail(res, "Bài làm không tồn tài")
+        if (answer.userId != req.authz.uid)
+            return fail(res, "Chỉ được phép xem bài làm của bạn")
+        ExamModel.findById(answer.examId, (err, exam) => {
+            if (err) return error(res, err)
+            answer._doc.exam = exam
+            return success(res, answer)
+        })
+    })
+})
+
 router.get("/answers", (req, res) => {
     AnswerModel.find({ userId: new ObjectId(req.authz.uid) })
         .select("start end point remain examId status")
@@ -236,19 +253,15 @@ router.get("/answer/exams/:id", (req, res) => {
         return fail(res, "Vui lòng đăng nhập trước khi thực hiện")
     AnswerModel.find({
         userId: new ObjectId(req.authz.uid),
-        examId: new ObjectId(req.params.id)
+        examId: new ObjectId(req.params.id),
+        status: "done"
     })
         .select("point _id status start")
         .sort("-start")
         .exec((err, answers) => {
             //TODO: update status
             if (err) return error(res, err)
-            ExamModel.findById(req.params.id, (err, exam) => {
-                if (err) return error(res, err)
-                exam.password = undefined
-                answers.exam = exam
-                return success(res, answers)
-            })
+            return success(res, answers)
         })
 })
 
