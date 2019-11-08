@@ -237,16 +237,19 @@ router.get("/answer/exams/:id", (req, res) => {
     AnswerModel.find({
         userId: new ObjectId(req.authz.uid),
         examId: new ObjectId(req.params.id)
-    }, (err, answers) => {
-        //TODO: update status
-        if (err) return error(res, err)
-        ExamModel.findById(req.params.id, (err, exam) => {
-            if (err) return error(res, err)
-            exam.password = undefined
-            answers._doc.exam = exam
-            return success(res, answers)
-        })
     })
+        .select("point _id status start")
+        .sort("-start")
+        .exec((err, answers) => {
+            //TODO: update status
+            if (err) return error(res, err)
+            ExamModel.findById(req.params.id, (err, exam) => {
+                if (err) return error(res, err)
+                exam.password = undefined
+                answers.exam = exam
+                return success(res, answers)
+            })
+        })
 })
 
 router.post("/answers", (req, res) => {
