@@ -21,7 +21,8 @@ router.get("/classes/subjects", (req, res) => {
         .exec((err, subjects) => {
             if (err) return error(res, err)
             subjects = subjects.reduce(function (rv, x) {
-                (rv[x.classId.name] = rv[x.classId.name] || []).push({ _id: x._id, name: x.name });
+                if (x.classId)
+                    (rv[x.classId.name] = rv[x.classId.name] || []).push({ _id: x._id, name: x.name });
                 return rv;
             }, {});
             return success(res, Object.keys(subjects).map((key) => {
