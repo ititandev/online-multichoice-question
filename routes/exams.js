@@ -2,9 +2,11 @@ var express = require("express");
 var router = express.Router();
 const ContentModel = require("../schema/ContentModel");
 const ExamModel = require("../schema/ExamModel");
+const LectureModel = require("../schema/LectureModel")
 const AnswerModel = require("../schema/AnswerModel");
 const { success, error, fail } = require("../common");
 var ObjectId = require('mongoose').Types.ObjectId;
+
 
 
 router.get("/exams", (req, res) => {
@@ -151,6 +153,71 @@ router.get("/exams/contents/:id", (req, res) => {
                 data = { totalPage: totalPage, page: req.query.page, data: exams, previous: previous, next: next }
                 return success(res, data)
             })
+        })
+})
+
+router.get("/examslectures/contents/:id", (req, res) => {
+    ExamModel.find({ contentId: req.params.id })
+        .select("name datetime contentId password total time")
+        .populate({
+            path: 'contentId',
+            select: 'name subjectId',
+            populate: {
+                path: 'subjectId',
+                select: 'classId name',
+                populate: {
+                    path: 'classId',
+                    select: 'name'
+                }
+            }
+        })
+        .exec((err, exams) => {
+            if (err) return error(res, err)
+            result = exams.map(element => {
+                return {
+                    _id: element._id,
+                    name: element.name,
+                    contentName: element.contentId.name,
+                    subjectName: element.contentId.subjectId.name,
+                    className: element.contentId.subjectId.classId.name,
+                    total: element.total,
+                    time: element.time,
+                    datetime: element.datetime,
+                    password: (element.password) ? true : false,
+                    type: "exam"
+                }
+            })
+            LectureModel.find({ contentId: req.params.id })
+                .populate({
+                    path: 'contentId',
+                    select: 'name subjectId',
+                    populate: {
+                        path: 'subjectId',
+                        select: 'classId name',
+                        populate: {
+                            path: 'classId',
+                            select: 'name'
+                        }
+                    }
+                })
+                .exec((err, lectures) => {
+                    if (err) return error(res, err)
+                    lectures = lectures.map(element => {
+                        return {
+                            _id: element._id,
+                            name: element.name,
+                            lectureUrl: element.lectureUrl,
+                            contentName: element.contentId.name,
+                            subjectName: element.contentId.subjectId.name,
+                            className: element.contentId.subjectId.classId.name,
+                            datetime: element.datetime,
+                            type: "lecture"
+                        }
+                    })
+                    return success(res, result.concat(lectures).sort((a, b) => {
+                        return new Date(b.datetime) - new Date(a.datetime);
+                    }))
+                })
         })
 })
 
