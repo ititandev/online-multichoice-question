@@ -101,7 +101,6 @@ router.get("/exams/:id", (req, res) => {
 })
 
 router.get("/exam/:id", (req, res) => {
-    //TODO: update status
     if (req.authz.role == "anony") {
         return fail(res, "Vui lòng đăng nhập trước khi thực hiện")
     } else {
@@ -113,31 +112,94 @@ router.get("/exam/:id", (req, res) => {
                 exam._doc.password = true
             else
                 exam._doc.password = false
-            AnswerModel.countDocuments({
+            AnswerModel.findOne({
                 userId: new ObjectId(req.authz.uid),
                 examId: new ObjectId(req.params.id),
                 status: "doing"
-            }, (err, doing) => {
+            }, (err, answer) => {
                 if (err) return error(res, err)
-                if (doing > 0) {
-                    exam._doc.status = "doing"
-                    return success(res, exam)
+                if (!answer) {
+                    AnswerModel.countDocuments({
+                        userId: new ObjectId(req.authz.uid),
+                        examId: new ObjectId(req.params.id),
+                        status: "done"
+                    }, (err, done) => {
+                        if (err) return error(res, err)
+                        if (done > 0)
+                            exam._doc.status = "done"
+                        else
+                            exam._doc.status = null
+
+                        AnswerModel.find({
+                            userId: new ObjectId(req.authz.uid),
+                            examId: new ObjectId(req.params.id),
+                            status: "done"
+                        })
+                            .select("point _id status start")
+                            .sort("-start")
+                            .exec((err, answers) => {
+                                if (err) return error(res, err)
+                                exam._doc.answers = answers
+                                return success(res, exam)
+                            })
+                    })
                 }
-                AnswerModel.countDocuments({
-                    userId: new ObjectId(req.authz.uid),
-                    examId: new ObjectId(req.params.id),
-                    status: "done"
-                }, (err, done) => {
-                    if (err) return error(res, err)
-                    if (done > 0) {
-                        exam._doc.status = "done"
-                        return success(res, exam)
+                else {
+                    pass = Math.round((Date.now() - answer.start) / 1000 / 60)
+                    if (pass >= answer.remain) {
+                        answer.end = Date.now()
+                        answer.remain = 0
+                        answer.answer = answer.answer.toUpperCase()
+                        answer.correct = 0
+                        answer.status = "done"
+
+                        ExamModel.findById(answer.examId, (err, exam) => {
+                            if (err) return error(res, err)
+                            if (!exam)
+                                return fail(res, "Bài kiểm tra không tồn tại")
+                            length = Math.min(answer.answer.length, exam.answer.length)
+                            for (let i = 0; i < length; i++) {
+                                answer.correct += (answer.answer[i] === exam.answer[i])
+                            }
+                            answer.point = Math.round((answer.correct / exam.total * 10) * 100) / 100
+                            AnswerModel.updateOne({ _id: answer.id }, answer, (err, answer) => {
+                                if (err) return error(res, err)
+                                exam._doc.status = "done"
+                                AnswerModel.find({
+                                    userId: new ObjectId(req.authz.uid),
+                                    examId: new ObjectId(req.params.id),
+                                    status: "done"
+                                })
+                                    .select("point _id status start")
+                                    .sort("-start")
+                                    .exec((err, answers) => {
+                                        if (err) return error(res, err)
+                                        exam._doc.answers = answers
+                                        return success(res, exam)
+                                    })
+                            })
+                        })
+                    } else {
+                        answer.remain = answer.remain - pass
+                        AnswerModel.updateOne({ _id: answer.id }, answer, (err, answer) => {
+                            if (err) return error(res, err)
+                            exam._doc.status = "doing"
+                            AnswerModel.find({
+                                userId: new ObjectId(req.authz.uid),
+                                examId: new ObjectId(req.params.id),
+                                status: "done"
+                            })
+                                .select("point _id status start")
+                                .sort("-start")
+                                .exec((err, answers) => {
+                                    if (err) return error(res, err)
+                                    exam._doc.answers = answers
+                                    return success(res, exam)
+                                })
+                        })
                     }
-                    else {
-                        exam._doc.status = null
-                        return success(res, exam)
-                    }
-                })
+                }
+
             })
         })
     }
@@ -343,7 +405,13 @@ router.get("/answers/exams/:id", (req, res) => {
                     element._doc.total = element.examId.total
                     element.examId = undefined
                 });
-                return success(res, { totalPage: totalPage, page: req.query.page, data: answers, previous: previous, next: next })
+                return success(res, {
+                    totalPage: totalPage,
+                    page: req.query.page,
+                    data: answers,
+                    previous: previous,
+                    next: next
+                })
             })
 
         })
@@ -361,6 +429,7 @@ router.get("/answer/exams/:id", (req, res) => {
         .sort("-start")
         .exec((err, answers) => {
             //TODO: update status
+
             if (err) return error(res, err)
             return success(res, answers)
         })

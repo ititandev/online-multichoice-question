@@ -7,7 +7,8 @@ const UserSchema = new Schema({
     password: {type: String, required: true },
     role: {type: String, required: true, default: "user" },
     datetime: { type: Date, default: Date.now },
-    active: {type: Boolean, required: true, default: false}
+    active: {type: Boolean, required: true, default: false},
+    remain: {type: Number, required: true}
 });
 const UserModel = mongoose.model('users', UserSchema);
 
