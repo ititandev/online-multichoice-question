@@ -9,6 +9,7 @@ const otherRouter = require("./routes/other")
 const classRouter = require("./routes/classes")
 const examRouter = require("./routes/exams")
 const lectureRouter = require("./routes/lectures")
+const imageRouter = require("./routes/images")
 
 require('dotenv').config();
 var app = express();
@@ -60,6 +61,7 @@ app.use("/api/", otherRouter);
 app.use("/api/", classRouter);
 app.use("/api/", examRouter);
 app.use("/api/", lectureRouter);
+app.use("/api/", imageRouter);
 
 
 
