@@ -11,6 +11,8 @@ var ObjectId = require('mongoose').Types.ObjectId;
 
 router.get("/exams", (req, res) => {
     if (req.query.status == "done") {
+        if (req.authz.role == "anony")
+            return fail(res, "Vui lòng đăng nhập trước khi thực hiện")
         AnswerModel.find({
             userId: req.authz.uid,
             status: "done"
@@ -22,7 +24,7 @@ router.get("/exams", (req, res) => {
             })
             .exec((err, answers) => {
                 if (err) return error(res, err)
-                
+
                 o = {}
                 for (let answer of answers) {
                     if (!answer.examId)
@@ -34,7 +36,7 @@ router.get("/exams", (req, res) => {
                             o[answer.examId._id] = answer
                     }
                 }
-                return success(res,Object.values(o).sort((a, b) => {
+                return success(res, Object.values(o).sort((a, b) => {
                     return new Date(b.start) - new Date(a.start);
                 }))
             })
