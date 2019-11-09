@@ -10,51 +10,83 @@ var ObjectId = require('mongoose').Types.ObjectId;
 
 
 router.get("/exams", (req, res) => {
-    if (req.authz.role != 'admin')
-        return fail(res, "Chỉ admin có thể liệt kê tất cả các bài kiểm tra")
-    if (!req.query.limit)
-        req.query.limit = 10
-    if (!req.query.page)
-        req.query.page = 1
-    ExamModel.find()
-        .select("name datetime contentId password")
-        .populate({
-            path: 'contentId',
-            select: 'name subjectId',
-            populate: {
-                path: 'subjectId',
-                select: 'classId name',
-                populate: {
-                    path: 'classId',
-                    select: 'name'
-                }
-            }
+    if (req.query.status == "done") {
+        AnswerModel.find({
+            userId: req.authz.uid,
+            status: "done"
         })
-        .sort('-datetime')
-        .skip((req.query.page - 1) * req.query.limit)
-        .limit(parseInt(req.query.limit))
-        .exec((err, exams) => {
-            if (err) return error(res, err)
-            ExamModel.countDocuments({}, (err, totalPage) => {
-                if (err) return error(res, err)
-                totalPage = Math.ceil(totalPage / req.query.limit)
-                previous = req.query.page > 1 ? req.protocol + "://" + req.get("host") + "/api/exams?page=" + (Number(req.query.page) - 1) + "&limit=" + req.query.limit : null
-                next = req.query.page < totalPage ? req.protocol + "://" + req.get("host") + "/api/exams?page=" + (Number(req.query.page) + 1) + "&limit=" + req.query.limit : null
-                exams = exams.map(element => {
-                    return {
-                        _id: element._id,
-                        name: element.name,
-                        contentName: element.contentId.name,
-                        subjectName: element.contentId.subjectId.name,
-                        className: element.contentId.subjectId.classId.name,
-                        datetime: element.datetime,
-                        password: (element.password) ? true : false
-                    }
-                })
-                data = { totalPage: totalPage, page: req.query.page, data: exams, previous: previous, next: next }
-                return success(res, data)
+            .select("_id point start")
+            .populate({
+                path: "examId",
+                select: "name"
             })
-        })
+            .exec((err, answers) => {
+                if (err) return error(res, err)
+                
+                o = {}
+                for (let answer of answers) {
+                    if (!answer.examId)
+                        continue
+                    if (!o[answer.examId._id])
+                        o[answer.examId._id] = answer
+                    else {
+                        if (o[answer.examId._id].point < answer.point)
+                            o[answer.examId._id] = answer
+                    }
+                }
+                return success(res,Object.values(o).sort((a, b) => {
+                    return new Date(b.start) - new Date(a.start);
+                }))
+            })
+    }
+    else {
+        if (req.authz.role != 'admin')
+            return fail(res, "Chỉ admin có thể liệt kê tất cả các bài kiểm tra")
+        if (!req.query.limit)
+            req.query.limit = 10
+        if (!req.query.page)
+            req.query.page = 1
+        ExamModel.find()
+            .select("name datetime contentId password")
+            .populate({
+                path: 'contentId',
+                select: 'name subjectId',
+                populate: {
+                    path: 'subjectId',
+                    select: 'classId name',
+                    populate: {
+                        path: 'classId',
+                        select: 'name'
+                    }
+                }
+            })
+            .sort('-datetime')
+            .skip((req.query.page - 1) * req.query.limit)
+            .limit(parseInt(req.query.limit))
+            .exec((err, exams) => {
+                if (err) return error(res, err)
+                ExamModel.countDocuments({}, (err, totalPage) => {
+                    if (err) return error(res, err)
+                    totalPage = Math.ceil(totalPage / req.query.limit)
+                    previous = req.query.page > 1 ? req.protocol + "://" + req.get("host") + "/api/exams?page=" + (Number(req.query.page) - 1) + "&limit=" + req.query.limit : null
+                    next = req.query.page < totalPage ? req.protocol + "://" + req.get("host") + "/api/exams?page=" + (Number(req.query.page) + 1) + "&limit=" + req.query.limit : null
+                    exams = exams.map(element => {
+                        return {
+                            _id: element._id,
+                            name: element.name,
+                            contentName: element.contentId.name,
+                            subjectName: element.contentId.subjectId.name,
+                            className: element.contentId.subjectId.classId.name,
+                            datetime: element.datetime,
+                            password: (element.password) ? true : false
+                        }
+                    })
+                    data = { totalPage: totalPage, page: req.query.page, data: exams, previous: previous, next: next }
+                    return success(res, data)
+                })
+            })
+    }
+
 })
 
 router.get("/exams/:id", (req, res) => {
