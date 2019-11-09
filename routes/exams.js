@@ -302,11 +302,51 @@ router.get("/answers", (req, res) => {
 router.get("/answers/exams/:id", (req, res) => {
     if (req.authz.role != "admin")
         return fail(res, "Chỉ admin có thể thực hiện")
-    AnswerModel.find({ examId: new ObjectId(req.params.id) }, (err, answers) => {
-        //TODO: update status
-        if (err) return error(res, err)
-        return success(res, answers)
+    if (!req.query.limit)
+        req.query.limit = 10
+    if (!req.query.page)
+        req.query.page = 1
+
+    AnswerModel.find({
+        examId: new ObjectId(req.params.id),
+        status: "done"
     })
+        .select("point start correct")
+        .populate({
+            path: "userId",
+            select: "name email"
+        })
+        .populate({
+            path: "examId",
+            select: "total name"
+        })
+        .sort('-start')
+        .skip((req.query.page - 1) * req.query.limit)
+        .limit(parseInt(req.query.limit))
+        .exec((err, answers) => {
+            //TODO: update status
+            if (err) return error(res, err)
+            AnswerModel.countDocuments({
+                examId: new ObjectId(req.params.id),
+                status: "done"
+            }, (err, totalPage) => {
+                if (err) return error(res, err)
+                totalPage = Math.ceil(totalPage / req.query.limit)
+                previous = req.query.page > 1 ? req.protocol + "://" + req.get("host") + "/api/answers/exams/" + req.params.id + "?page=" + (Number(req.query.page) - 1) + "&limit=" + req.query.limit : null
+                next = req.query.page < totalPage ? req.protocol + "://" + req.get("host") + "/api/answers/exams/" + req.params.id + "?page=" + (Number(req.query.page) + 1) + "&limit=" + req.query.limit : null
+
+                answers.forEach(element => {
+                    element._doc.userEmail = element.userId.email
+                    element._doc.userName = element.userId.name
+                    element.userId = undefined
+                    element._doc.examName = element.examId.name
+                    element._doc.total = element.examId.total
+                    element.examId = undefined
+                });
+                return success(res, { totalPage: totalPage, page: req.query.page, data: answers, previous: previous, next: next })
+            })
+
+        })
 })
 
 router.get("/answer/exams/:id", (req, res) => {
