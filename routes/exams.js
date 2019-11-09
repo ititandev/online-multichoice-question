@@ -160,63 +160,20 @@ router.get("/exams/contents/:id", (req, res) => {
 
 router.get("/examslectures/contents/:id", (req, res) => {
     ExamModel.find({ contentId: req.params.id })
-        .select("name datetime contentId password total time")
-        .populate({
-            path: 'contentId',
-            select: 'name subjectId',
-            populate: {
-                path: 'subjectId',
-                select: 'classId name',
-                populate: {
-                    path: 'classId',
-                    select: 'name'
-                }
-            }
-        })
+        .select("name datetime")
         .exec((err, exams) => {
             if (err) return error(res, err)
-            result = exams.map(element => {
-                return {
-                    _id: element._id,
-                    name: element.name,
-                    contentName: element.contentId.name,
-                    subjectName: element.contentId.subjectId.name,
-                    className: element.contentId.subjectId.classId.name,
-                    total: element.total,
-                    time: element.time,
-                    datetime: element.datetime,
-                    password: (element.password) ? true : false,
-                    type: "exam"
-                }
-            })
+            exams.forEach(element => {
+                element._doc.type = "exam"
+            });
             LectureModel.find({ contentId: req.params.id })
-                .populate({
-                    path: 'contentId',
-                    select: 'name subjectId',
-                    populate: {
-                        path: 'subjectId',
-                        select: 'classId name',
-                        populate: {
-                            path: 'classId',
-                            select: 'name'
-                        }
-                    }
-                })
+                .select("name datetime")
                 .exec((err, lectures) => {
                     if (err) return error(res, err)
-                    lectures = lectures.map(element => {
-                        return {
-                            _id: element._id,
-                            name: element.name,
-                            lectureUrl: element.lectureUrl,
-                            contentName: element.contentId.name,
-                            subjectName: element.contentId.subjectId.name,
-                            className: element.contentId.subjectId.classId.name,
-                            datetime: element.datetime,
-                            type: "lecture"
-                        }
-                    })
-                    return success(res, result.concat(lectures).sort((a, b) => {
+                    lectures.forEach(element => {
+                        element._doc.type = "lecture"
+                    });
+                    return success(res, exams.concat(lectures).sort((a, b) => {
                         return new Date(b.datetime) - new Date(a.datetime);
                     }))
                 })
