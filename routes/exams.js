@@ -73,6 +73,8 @@ router.get("/exam/:id", (req, res) => {
     } else {
         ExamModel.findById(req.params.id, "name time total datetime password", (err, exam) => {
             if (err) return error(res, err);
+            if (!exam)
+                return fail(res, "Bài kiểm tra không tồn tài")
             if (exam.password)
                 exam._doc.password = true
             else
