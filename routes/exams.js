@@ -417,24 +417,6 @@ router.get("/answers/exams/:id", (req, res) => {
         })
 })
 
-router.get("/answer/exams/:id", (req, res) => {
-    if (req.authz.role == "anony")
-        return fail(res, "Vui lòng đăng nhập trước khi thực hiện")
-    AnswerModel.find({
-        userId: new ObjectId(req.authz.uid),
-        examId: new ObjectId(req.params.id),
-        status: "done"
-    })
-        .select("point _id status start")
-        .sort("-start")
-        .exec((err, answers) => {
-            //TODO: update status
-
-            if (err) return error(res, err)
-            return success(res, answers)
-        })
-})
-
 router.post("/answers", (req, res) => {
     if (req.authz.role == "anony")
         return fail(res, "Vui lòng đăng nhập trước khi làm bài kiểm tra")
