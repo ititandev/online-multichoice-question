@@ -317,7 +317,10 @@ router.delete("/exams/:id", (req, res) => {
         return fail(res, "Chỉ admin có thể xóa bài kiểm tra")
     ExamModel.deleteOne({ _id: req.params.id }, err => {
         if (err) return error(res, err)
-        return success(res, null, "Xóa bài kiểm tra thành công")
+        AnswerModel.deleteMany({examId: ObjectId(req.params.id)}, err => {
+            if (err) return error(res, err)
+            return success(res, null, "Xóa bài kiểm tra thành công")
+        })
     })
 })
 
