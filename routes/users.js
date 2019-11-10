@@ -110,16 +110,15 @@ module.exports = app => {
   router.get("/user", function (req, res, next) {
     if (req.authz.role != "anony") {
       UserModel.findById(req.authz.uid, (err, user) => {
-        if (err)
-          return error(res, err);
-        else {
-          user.password = undefined
-          return success(res, user)
-        }
+        if (err) return error(res, err);
+        if (!user)
+          return fail(res, "Tài khoản không tồn tại")
+        user.password = undefined
+        return success(res, user)
       });
     }
     else
-      return fail(res, "Ẩn danh không thể sử dụng API này")
+      return fail(res, "Vui lòng đăng nhập trước khi thực hiện")
   });
 
   router.get("/users", (req, res) => {
