@@ -63,8 +63,9 @@ router.delete("/classes/:id", (req, res) => {
         return fail(res, "Chỉ admin có thể xóa lớp học")
     ClassModel.deleteOne({ _id: req.params.id }, err => {
         if (err) return error(res, err)
-        SubjectModel.deleteMany({ classId: ObjectId(req.params.id) }, err => {
-            if (err) return error(res, err)
+        SubjectModel.countDocuments({classId: ObjectId(req.params.id)}, (err, count)=> {
+            if (count > 0)
+                return fail(res, "Vui lòng xóa tất cả môn học của lớp học trước")
             return success(res, null, "Xóa lớp học thành công")
         })
     })
@@ -115,8 +116,10 @@ router.delete("/subjects/:id", (req, res) => {
         return fail(res, "Chỉ admin có thể xóa môn học")
     SubjectModel.deleteOne({ _id: req.params.id }, err => {
         if (err) return error(res, err)
-        ContentModel.deleteMany({ subjectId: ObjectId(req.params.id) }, err => {
+        ContentModel.countDocuments({subjectId: req.params.id}, (err, count) => {
             if (err) return error(res, err)
+            if (count > 0)
+                return fail(res, "Vui lòng xóa tất cả chủ đề của môn học trước")
             return success(res, null, "Xóa môn học thành công")
         })
     })
