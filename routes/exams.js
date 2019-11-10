@@ -476,14 +476,19 @@ router.put("/answers/:id", (req, res) => {
             return fail(res, "Không được phép cập nhật bài làm đã hoàn thành")
         if (req.body.status == "done") {
             pass = Math.round((Date.now() - answer.start) / 1000)
-            // if (pass >)
 
             req.body.end = Date.now()
             req.body.remain = 0
-            req.body.answer = req.body.answer.toUpperCase()
             req.body.correct = 0
             ExamModel.findById(answer.examId, (err, exam) => {
                 if (err) return error(res, err)
+                if (!exam)
+                    return fail(res, "Bài kiểm tra không tồn tại")
+                if (pass - 60 > exam.time)
+                    req.body.answer = answer.answer.toUpperCase()
+                else
+                    req.body.answer = req.body.answer.toUpperCase()
+
                 length = Math.min(req.body.answer.length, exam.answer.length)
                 for (let i = 0; i < length; i++) {
                     req.body.correct += (req.body.answer[i] === exam.answer[i])
