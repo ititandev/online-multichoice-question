@@ -96,6 +96,7 @@ router.get("/exams/:id", (req, res) => {
         return fail(res, "Chỉ admin có thể thực hiện")
     ExamModel.findById(req.params.id, (err, exam) => {
         if (err) return error(res, err)
+        exam.time = exam.time / 60
         return success(res, exam)
     })
 })
@@ -108,6 +109,7 @@ router.get("/exam/:id", (req, res) => {
             if (err) return error(res, err);
             if (!exam)
                 return fail(res, "Bài kiểm tra không tồn tài")
+            exam.time = exam.time / 60
             if (exam.password)
                 exam._doc.password = true
             else
@@ -145,8 +147,10 @@ router.get("/exam/:id", (req, res) => {
                     })
                 }
                 else {
-                    pass = Math.round((Date.now() - answer.start) / 1000 / 60)
-                    if (pass >= answer.remain) {
+                    pass = Math.round((Date.now() - answer.start) / 1000)
+                    console.log(pass)
+                    console.log(pass >= exam.time)
+                    if (pass >= exam.time * 60) {
                         answer.end = Date.now()
                         answer.remain = 0
                         answer.answer = answer.answer.toUpperCase()
@@ -180,7 +184,7 @@ router.get("/exam/:id", (req, res) => {
                             })
                         })
                     } else {
-                        answer.remain = answer.remain - pass
+                        answer.remain = exam.time * 60 - pass
                         AnswerModel.updateOne({ _id: answer.id }, answer, (err, answer) => {
                             if (err) return error(res, err)
                             exam._doc.status = "doing"
@@ -289,6 +293,7 @@ router.post("/exams", (req, res) => {
                 return fail(res, "Bài kiểm tra đã tồn tại")
             req.body.answer = req.body.answer.toUpperCase().replace(/[^ABCD]/g, '')
             req.body.total = req.body.answer.length
+            req.body.time = req.body.time * 60
             ExamModel.create(req.body, (err, exam) => {
                 if (err) return error(res, err)
                 return success(res, exam)
@@ -300,6 +305,7 @@ router.post("/exams", (req, res) => {
 router.put("/exams/:id", (req, res) => {
     if (req.authz.role != "admin")
         return fail(res, "Chỉ admin có thể chỉnh sửa bài kiểm tra")
+    req.body.time = req.body.time * 60
     ExamModel.updateOne({ _id: req.params.id }, req.body, (err, r) => {
         if (err) return error(res, err)
         return success(res, null, "Chỉnh sửa bài kiểm tra thành công")
@@ -469,11 +475,13 @@ router.put("/answers/:id", (req, res) => {
         if (answer.status === "done")
             return fail(res, "Không được phép cập nhật bài làm đã hoàn thành")
         if (req.body.status == "done") {
+            pass = Math.round((Date.now() - answer.start) / 1000)
+            // if (pass >)
+
             req.body.end = Date.now()
             req.body.remain = 0
             req.body.answer = req.body.answer.toUpperCase()
             req.body.correct = 0
-
             ExamModel.findById(answer.examId, (err, exam) => {
                 if (err) return error(res, err)
                 length = Math.min(req.body.answer.length, exam.answer.length)
