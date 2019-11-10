@@ -74,15 +74,18 @@ router.get("/exams", (req, res) => {
                     previous = req.query.page > 1 ? req.protocol + "://" + req.get("host") + "/api/exams?page=" + (Number(req.query.page) - 1) + "&limit=" + req.query.limit : null
                     next = req.query.page < totalPage ? req.protocol + "://" + req.get("host") + "/api/exams?page=" + (Number(req.query.page) + 1) + "&limit=" + req.query.limit : null
                     exams = exams.map(element => {
-                        return {
-                            _id: element._id,
-                            name: element.name,
-                            contentName: element.contentId.name,
-                            subjectName: element.contentId.subjectId.name,
-                            className: element.contentId.subjectId.classId.name,
-                            datetime: element.datetime,
-                            password: (element.password) ? true : false
-                        }
+                        if (!element || !element.contentId || !element.contentId.subjectId || !element.contentId.subjectId.classId)
+                            return {}
+                        else
+                            return {
+                                _id: element._id,
+                                name: element.name,
+                                contentName: element.contentId.name,
+                                subjectName: element.contentId.subjectId.name,
+                                className: element.contentId.subjectId.classId.name,
+                                datetime: element.datetime,
+                                password: (element.password) ? true : false
+                            }
                     })
                     data = { totalPage: totalPage, page: req.query.page, data: exams, previous: previous, next: next }
                     return success(res, data)
@@ -257,17 +260,20 @@ router.get("/exams/contents/:id", (req, res) => {
                 previous = req.query.page > 1 ? req.protocol + "://" + req.get("host") + "/api/exams/contents/" + req.params.id + "?page=" + (Number(req.query.page) - 1) + "&limit=" + req.query.limit : null
                 next = req.query.page < totalPage ? req.protocol + "://" + req.get("host") + "/api/exams/contents/" + req.params.id + "?page=" + (Number(req.query.page) + 1) + "&limit=" + req.query.limit : null
                 exams = exams.map(element => {
-                    return {
-                        _id: element._id,
-                        name: element.name,
-                        contentName: element.contentId.name,
-                        subjectName: element.contentId.subjectId.name,
-                        className: element.contentId.subjectId.classId.name,
-                        total: element.total,
-                        time: element.time,
-                        datetime: element.datetime,
-                        password: (element.password) ? true : false
-                    }
+                    if (!element || !element.contentId || !element.contentId.subjectId || !element.contentId.subjectId.classId)
+                        return {}
+                    else
+                        return {
+                            _id: element._id,
+                            name: element.name,
+                            contentName: element.contentId.name,
+                            subjectName: element.contentId.subjectId.name,
+                            className: element.contentId.subjectId.classId.name,
+                            total: element.total,
+                            time: element.time,
+                            datetime: element.datetime,
+                            password: (element.password) ? true : false
+                        }
                 })
                 data = { totalPage: totalPage, page: req.query.page, data: exams, previous: previous, next: next }
                 return success(res, data)
