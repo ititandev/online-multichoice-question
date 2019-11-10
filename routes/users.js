@@ -209,7 +209,10 @@ router.put("/users/:id", (req, res) => {
     if (req.body.name) user.name = req.body.name
     if (req.body.phone) user.phone = req.body.phone
     if (req.body.role) user.role = req.body.role
-    if (req.body.active) user.active = req.body.active
+    if (req.body.active) {
+      user.active = req.body.active
+      user.remain = 18000
+    }
     if (req.body.password) {
       hash = bcrypt.hashSync(req.body.password, saltRounds);
       user.password = hash;
@@ -225,7 +228,7 @@ router.put("/users/:id", (req, res) => {
 router.put("/active", (req, res) => {
   if (req.authz.role != "admin")
     return fail(res, "Chỉ admin có thể modify other user")
-  UserModel.updateMany({ active: false }, { active: true }, (err, r) => {
+  UserModel.updateMany({ active: false }, { active: true, remain: 18000 }, (err, r) => {
     if (err) return error(res, err)
     return success(res, "Kích hoạt thành công " + r.nModified + " tài khoản")
   })
