@@ -178,12 +178,11 @@ router.get("/exam/:id", (req, res) => {
                                 .exec((err, answers) => {
                                     if (err) return error(res, err)
                                     exam._doc.answers = answers
+                                    exam.answer = undefined
 
                                     if (req.authz.role != "admin") {
                                         UserModel.findById(req.authz.uid, (err, user) => {
                                             if (err) return error(res, err)
-                                            console.log(user.remain)
-                                            console.log(exam.time)
                                             if (user.remain - exam.time <= 0) {
                                                 user.active = false
                                                 user.remain = 0
@@ -194,12 +193,13 @@ router.get("/exam/:id", (req, res) => {
                                             }
                                             UserModel.updateOne({ _id: req.authz.uid }, user, err => {
                                                 if (err) return error(res, err)
-                                                exam.answer = undefined
                                                 return success(res, exam)
                                             })
 
                                         })
                                     }
+                                    else
+                                        return success(res, exam)
                                 })
                         })
 
