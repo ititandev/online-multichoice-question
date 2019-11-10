@@ -527,7 +527,7 @@ router.put("/answers/:id", (req, res) => {
                                 user.active = true
                                 user.remain = user.remain - exam.time / 60
                             }
-                            UserModel.updateOne({ _id: req.authz.uid }, user, err => {
+                            UserModel.updateOne({ _id: req.authz.uid }, err => {
                                 if (err) return error(res, err)
                                 return success(res, {
                                     _id: req.params.id,
@@ -540,15 +540,12 @@ router.put("/answers/:id", (req, res) => {
                         })
                     }
                     else {
-                        UserModel.updateOne({ _id: req.authz.uid }, user, err => {
-                            if (err) return error(res, err)
-                            return success(res, {
-                                _id: req.params.id,
-                                correct: req.body.correct,
-                                total: exam.total,
-                                point: req.body.point
-                            }, "Nộp bài thành công")
-                        })
+                        return success(res, {
+                            _id: req.params.id,
+                            correct: req.body.correct,
+                            total: exam.total,
+                            point: req.body.point
+                        }, "Nộp bài thành công")
                     }
 
                 })
