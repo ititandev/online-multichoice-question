@@ -3,7 +3,10 @@ var router = express.Router();
 const ClassModel = require("../schema/ClassModel");
 const SubjectModel = require("../schema/SubjectModel");
 const ContentModel = require("../schema/ContentModel");
+const ExamModel = require("../schema/ExamModel");
+const LectureModel = require("../schema/LectureModel");
 const { success, error, fail } = require("../common");
+var ObjectId = require('mongoose').Types.ObjectId;
 
 
 
@@ -60,7 +63,10 @@ router.delete("/classes/:id", (req, res) => {
         return fail(res, "Chỉ admin có thể xóa lớp học")
     ClassModel.deleteOne({ _id: req.params.id }, err => {
         if (err) return error(res, err)
-        return success(res, null, "Xóa lớp học thành công")
+        SubjectModel.deleteMany({ classId: ObjectId(req.params.id) }, err => {
+            if (err) return error(res, err)
+            return success(res, null, "Xóa lớp học thành công")
+        })
     })
 })
 
@@ -109,7 +115,10 @@ router.delete("/subjects/:id", (req, res) => {
         return fail(res, "Chỉ admin có thể xóa môn học")
     SubjectModel.deleteOne({ _id: req.params.id }, err => {
         if (err) return error(res, err)
-        return success(res, null, "Xóa môn học thành công")
+        ContentModel.deleteMany({ subjectId: ObjectId(req.params.id) }, err => {
+            if (err) return error(res, err)
+            return success(res, null, "Xóa môn học thành công")
+        })
     })
 })
 
@@ -158,7 +167,13 @@ router.delete("/contents/:id", (req, res) => {
         return fail(res, "Chỉ admin có thể xóa chủ đề")
     ContentModel.deleteOne({ _id: req.params.id }, err => {
         if (err) return error(res, err)
-        return success(res, null, "Xóa chủ đề thành công")
+        ExamModel.deleteMany({ contentId: ObjectId(req.params.id) }, err => {
+            if (err) return error(res, err)
+            LectureModel.deleteMany({ contentId: ObjectId(req.params.id) }, err => {
+                if (err) return error(res, err)
+                return success(res, null, "Xóa chủ đề thành công")
+            })
+        })
     })
 })
 
