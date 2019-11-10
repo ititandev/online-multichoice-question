@@ -539,6 +539,17 @@ router.put("/answers/:id", (req, res) => {
 
                         })
                     }
+                    else {
+                        UserModel.updateOne({ _id: req.authz.uid }, user, err => {
+                            if (err) return error(res, err)
+                            return success(res, {
+                                _id: req.params.id,
+                                correct: req.body.correct,
+                                total: exam.total,
+                                point: req.body.point
+                            }, "Nộp bài thành công")
+                        })
+                    }
 
                 })
             })
