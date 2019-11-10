@@ -8,7 +8,7 @@ const ExamSchema = new Schema({
     time: { type: Number, required: true },
     total: { type: Number, required: true },
     password: {type: String, default: ""},
-    note: { type: String, required: true },
+    note: { type: String, required: false },
     contentId: { type: Schema.Types.ObjectId, ref: 'contents', required: true },
     datetime: { type: Date, default: Date.now }
 });
