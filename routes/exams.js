@@ -4,6 +4,7 @@ const ContentModel = require("../schema/ContentModel");
 const ExamModel = require("../schema/ExamModel");
 const LectureModel = require("../schema/LectureModel")
 const AnswerModel = require("../schema/AnswerModel");
+const UserModel = require("../schema/UserModel");
 const { success, error, fail } = require("../common");
 var ObjectId = require('mongoose').Types.ObjectId;
 
@@ -105,7 +106,7 @@ router.get("/exam/:id", (req, res) => {
     if (req.authz.role == "anony") {
         return fail(res, "Vui lòng đăng nhập trước khi thực hiện")
     } else {
-        ExamModel.findById(req.params.id, "name time total datetime password", (err, exam) => {
+        ExamModel.findById(req.params.id, "name time total datetime password answer", (err, exam) => {
             if (err) return error(res, err);
             if (!exam)
                 return fail(res, "Bài kiểm tra không tồn tài")
@@ -148,8 +149,6 @@ router.get("/exam/:id", (req, res) => {
                 }
                 else {
                     pass = Math.round((Date.now() - answer.start) / 1000)
-                    console.log(pass)
-                    console.log(pass >= exam.time)
                     if (pass >= exam.time * 60) {
                         answer.end = Date.now()
                         answer.remain = 0
@@ -157,32 +156,50 @@ router.get("/exam/:id", (req, res) => {
                         answer.correct = 0
                         answer.status = "done"
 
-                        ExamModel.findById(answer.examId, (err, exam) => {
+
+                        length = Math.min(answer.answer.length, exam.answer.length)
+                        for (let i = 0; i < length; i++) {
+                            answer.correct += (answer.answer[i] === exam.answer[i])
+                        }
+                        answer.point = Math.round((answer.correct / exam.total * 10) * 100) / 100
+                        AnswerModel.updateOne({ _id: answer.id }, answer, (err, answer) => {
                             if (err) return error(res, err)
-                            if (!exam)
-                                return fail(res, "Bài kiểm tra không tồn tại")
-                            length = Math.min(answer.answer.length, exam.answer.length)
-                            for (let i = 0; i < length; i++) {
-                                answer.correct += (answer.answer[i] === exam.answer[i])
-                            }
-                            answer.point = Math.round((answer.correct / exam.total * 10) * 100) / 100
-                            AnswerModel.updateOne({ _id: answer.id }, answer, (err, answer) => {
-                                if (err) return error(res, err)
-                                exam._doc.status = "done"
-                                AnswerModel.find({
-                                    userId: new ObjectId(req.authz.uid),
-                                    examId: new ObjectId(req.params.id),
-                                    status: "done"
-                                })
-                                    .select("point _id status start")
-                                    .sort("-start")
-                                    .exec((err, answers) => {
-                                        if (err) return error(res, err)
-                                        exam._doc.answers = answers
-                                        return success(res, exam)
-                                    })
+                            exam._doc.status = "done"
+                            AnswerModel.find({
+                                userId: new ObjectId(req.authz.uid),
+                                examId: new ObjectId(req.params.id),
+                                status: "done"
                             })
+                                .select("point _id status start")
+                                .sort("-start")
+                                .exec((err, answers) => {
+                                    if (err) return error(res, err)
+                                    exam._doc.answers = answers
+
+                                    if (req.authz.role != "admin") {
+                                        UserModel.findById(req.authz.uid, (err, user) => {
+                                            if (err) return error(res, err)
+                                            console.log(user.remain)
+                                            console.log(exam.time)
+                                            if (user.remain - exam.time <= 0) {
+                                                user.active = false
+                                                user.remain = 0
+                                            }
+                                            else {
+                                                user.active = true
+                                                user.remain = user.remain - exam.time
+                                            }
+                                            UserModel.updateOne({ _id: req.authz.uid }, user, err => {
+                                                if (err) return error(res, err)
+                                                exam.answer = undefined
+                                                return success(res, exam)
+                                            })
+
+                                        })
+                                    }
+                                })
                         })
+
                     } else {
                         answer.remain = exam.time * 60 - pass
                         AnswerModel.updateOne({ _id: answer.id }, answer, (err, answer) => {
@@ -317,7 +334,7 @@ router.delete("/exams/:id", (req, res) => {
         return fail(res, "Chỉ admin có thể xóa bài kiểm tra")
     ExamModel.deleteOne({ _id: req.params.id }, err => {
         if (err) return error(res, err)
-        AnswerModel.deleteMany({examId: ObjectId(req.params.id)}, err => {
+        AnswerModel.deleteMany({ examId: ObjectId(req.params.id) }, err => {
             if (err) return error(res, err)
             return success(res, null, "Xóa bài kiểm tra thành công")
         })
@@ -499,12 +516,30 @@ router.put("/answers/:id", (req, res) => {
                 req.body.point = Math.round((req.body.correct / exam.total * 10) * 100) / 100
                 AnswerModel.updateOne({ _id: req.params.id }, req.body, (err, answers) => {
                     if (err) return error(res, err)
-                    return success(res, {
-                        _id: req.params.id,
-                        correct: req.body.correct,
-                        total: exam.total,
-                        point: req.body.point
-                    }, "Nộp bài thành công")
+                    if (req.authz.role != "admin") {
+                        UserModel.findById(req.authz.uid, (err, user) => {
+                            if (err) return error(res, err)
+                            if (user.remain - exam.time / 60 <= 0) {
+                                user.active = false
+                                user.remain = 0
+                            }
+                            else {
+                                user.active = true
+                                user.remain = user.remain - exam.time / 60
+                            }
+                            UserModel.updateOne({ _id: req.authz.uid }, user, err => {
+                                if (err) return error(res, err)
+                                return success(res, {
+                                    _id: req.params.id,
+                                    correct: req.body.correct,
+                                    total: exam.total,
+                                    point: req.body.point
+                                }, "Nộp bài thành công")
+                            })
+
+                        })
+                    }
+
                 })
             })
         } else {
@@ -515,6 +550,5 @@ router.put("/answers/:id", (req, res) => {
         }
     })
 })
-
 
 module.exports = router;

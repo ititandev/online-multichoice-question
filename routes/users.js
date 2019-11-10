@@ -5,6 +5,8 @@ const bcrypt = require("bcrypt");
 const http = require('http');
 const { success, error, fail } = require("../common")
 const { createJWToken, verifyJWTToken } = require("../auth.js");
+const AnswerModel = require("../schema/AnswerModel");
+var ObjectId = require('mongoose').Types.ObjectId;
 const saltRounds = 10;
 
 
@@ -85,7 +87,7 @@ router.post("/login", function (req, res, next) {
               uid: user._id,
               role: user.role
             },
-            604800
+            82800
           );
           res.set("Authorization", token);
           delete user.password;
@@ -220,10 +222,10 @@ router.put("/users/:id", (req, res) => {
   })
 })
 
-router.put("/active", (req,res) => {
+router.put("/active", (req, res) => {
   if (req.authz.role != "admin")
     return fail(res, "Chỉ admin có thể modify other user")
-  UserModel.updateMany({active: false}, {active: true}, (err, r) => {
+  UserModel.updateMany({ active: false }, { active: true }, (err, r) => {
     if (err) return error(res, err)
     return success(res, "Kích hoạt thành công " + r.nModified + " tài khoản")
   })
@@ -234,7 +236,10 @@ router.delete("/users/:id", (req, res) => {
     return fail(res, "Chỉ admin có thể xóa tài khoản")
   UserModel.deleteOne({ _id: req.params.id }, (err) => {
     if (err) return err(res, err)
-    return success(res, "Xóa tài khoản thành công")
+    AnswerModel.deleteMany({ userId: ObjectId(req.params.id) }, err => {
+      if (err) return error(res, err)
+      return success(res, "Xóa tài khoản thành công")
+    })
   })
 })
 
