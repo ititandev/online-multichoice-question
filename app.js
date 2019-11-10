@@ -10,9 +10,24 @@ const classRouter = require("./routes/classes")
 const examRouter = require("./routes/exams")
 const lectureRouter = require("./routes/lectures")
 const imageRouter = require("./routes/images")
+const mailer = require('express-mailer');
+
+
 
 require('dotenv').config();
 var app = express();
+mailer.extend(app, {
+  from: 'no-reply@tracnghiem789.com',
+  host: 'smtp.gmail.com', // hostname
+  secureConnection: true, // use SSL
+  port: 465, // port for secure SMTP
+  transportMethod: 'SMTP', // default is SMTP. Accepts anything that nodemailer accepts
+  auth: {
+    user: 'tracnghiem789service@gmail.com',
+    pass: 'Aa123456!'
+  }
+});
+
 
 
 app.set("views", path.join(__dirname, "views"));
@@ -56,13 +71,12 @@ app.use((req, res, next) => {
     })
 })
 
-app.use("/api/", usersRouter);
+app.use("/api/", usersRouter(app));
 app.use("/api/", otherRouter);
 app.use("/api/", classRouter);
 app.use("/api/", examRouter);
 app.use("/api/", lectureRouter);
 app.use("/api/", imageRouter);
-
 
 
 app.use(function (req, res, next) {
