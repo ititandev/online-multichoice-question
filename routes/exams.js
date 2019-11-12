@@ -290,7 +290,7 @@ router.get("/examslectures/contents/:id", (req, res) => {
                 element._doc.type = "exam"
             });
             LectureModel.find({ contentId: req.params.id })
-                .select("name datetime")
+                .select("name datetime lectureUrl")
                 .exec((err, lectures) => {
                     if (err) return error(res, err)
                     lectures.forEach(element => {
