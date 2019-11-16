@@ -282,23 +282,47 @@ router.get("/exams/contents/:id", (req, res) => {
 })
 
 router.get("/examslectures/contents/:id", (req, res) => {
-    ExamModel.find({ contentId: req.params.id })
-        .select("name datetime")
-        .exec((err, exams) => {
+    ContentModel.findById(req.params.id)
+        .select("name subjectId")
+        .populate({
+            path: 'subjectId',
+            select: 'name',
+            populate: {
+                path: 'classId',
+                select: 'name'
+            }
+        })
+        .exec((err, content) => {
             if (err) return error(res, err)
-            exams.forEach(element => {
-                element._doc.type = "exam"
-            });
-            LectureModel.find({ contentId: req.params.id })
-                .select("name datetime lectureUrl")
-                .exec((err, lectures) => {
+            if (!content)
+                return fail(res, "Chủ đề không tồn tại")
+            if (!content.subjectId || !content.subjectId.classId)
+                return fail(res, "Chủ đề không thuộc về một môn học hoặc một lớp học nào")
+
+            ExamModel.find({ contentId: req.params.id })
+                .select("name datetime")
+                .exec((err, exams) => {
                     if (err) return error(res, err)
-                    lectures.forEach(element => {
-                        element._doc.type = "lecture"
+                    exams.forEach(element => {
+                        element._doc.type = "exam"
                     });
-                    return success(res, exams.concat(lectures).sort((a, b) => {
-                        return new Date(b.datetime) - new Date(a.datetime);
-                    }))
+                    LectureModel.find({ contentId: req.params.id })
+                        .select("name datetime lectureUrl")
+                        .exec((err, lectures) => {
+                            if (err) return error(res, err)
+                            lectures.forEach(element => {
+                                element._doc.type = "lecture"
+                            });
+                            let data = {
+                                contentName: content.name,
+                                subjectName: content.subjectId.name,
+                                className: content.subjectId.classId.name,
+                                examslectures: exams.concat(lectures).sort((a, b) => {
+                                    return new Date(b.datetime) - new Date(a.datetime);
+                                })
+                            }
+                            return success(res, data)
+                        })
                 })
         })
 })
