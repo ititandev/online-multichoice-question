@@ -21,7 +21,19 @@ router.get("/exams", (req, res) => {
             .select("_id point start")
             .populate({
                 path: "examId",
-                select: "name"
+                select: "name contentId",
+                populate: {
+                    path: 'contentId',
+                    select: 'name subjectId',
+                    populate: {
+                        path: 'subjectId',
+                        select: 'classId name',
+                        populate: {
+                            path: 'classId',
+                            select: 'name'
+                        }
+                    }
+                }
             })
             .exec((err, answers) => {
                 if (err) return error(res, err)
@@ -37,9 +49,19 @@ router.get("/exams", (req, res) => {
                             o[answer.examId._id] = answer
                     }
                 }
-                return success(res, Object.values(o).sort((a, b) => {
+                data = Object.values(o).sort((a, b) => {
                     return new Date(b.start) - new Date(a.start);
-                }))
+                })
+                
+                data.forEach(element => {
+                    element._doc.examId = element.examId
+                    element._doc.examName = element.examId.name
+                    element._doc.contentName = element.examId.contentId.name
+                    element._doc.subjectName = element.examId.contentId.subjectId.name
+                    element._doc.className = element.examId.contentId.subjectId.classId.name
+                    element.examId = element.examId._id
+                })
+                return success(res, data)
             })
     }
     else {
