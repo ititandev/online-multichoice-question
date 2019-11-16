@@ -52,13 +52,13 @@ router.get("/exams", (req, res) => {
                 data = Object.values(o).sort((a, b) => {
                     return new Date(b.start) - new Date(a.start);
                 })
-                
+
                 data.forEach(element => {
                     element._doc.examId = element.examId
-                    element._doc.examName = element.examId.name
-                    element._doc.contentName = element.examId.contentId.name
-                    element._doc.subjectName = element.examId.contentId.subjectId.name
-                    element._doc.className = element.examId.contentId.subjectId.classId.name
+                    element._doc.examName = element.examId ? element.examId.name : ""
+                    element._doc.contentName = element.examId.contentId ? element.examId.contentId.name : ""
+                    element._doc.subjectName = element.examId.contentId.subjectId ? element.examId.contentId.subjectId.name : ""
+                    element._doc.className = element.examId.contentId.subjectId.classId ? element.examId.contentId.subjectId.classId.name : ""
                     element.examId = element.examId._id
                 })
                 return success(res, data)
