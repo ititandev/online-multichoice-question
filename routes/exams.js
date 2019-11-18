@@ -579,7 +579,7 @@ router.put("/answers/:id", (req, res) => {
                                 user.active = true
                                 user.remain = user.remain - exam.time / 60
                             }
-                            UserModel.updateOne({ _id: req.authz.uid }, err => {
+                            UserModel.updateOne({ _id: req.authz.uid }, user, err => {
                                 if (err) return error(res, err)
                                 return success(res, {
                                     _id: req.params.id,
