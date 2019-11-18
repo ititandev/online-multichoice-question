@@ -114,6 +114,8 @@ module.exports = app => {
         if (!user)
           return fail(res, "Tài khoản không tồn tại")
         user.password = undefined
+        if (!user.active)
+          return fail(res, "Tài khoản chưa được kích hoạt hoặc hết hạn sử dụng. Liên hệ admin để kích hoạt tài khoản")
         return success(res, user)
       });
     }
