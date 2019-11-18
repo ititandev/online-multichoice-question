@@ -374,6 +374,8 @@ router.post("/exams", (req, res) => {
 router.put("/exams/:id", (req, res) => {
     if (req.authz.role != "admin")
         return fail(res, "Chỉ admin có thể chỉnh sửa bài kiểm tra")
+    req.body.answer = req.body.answer.toUpperCase().replace(/[^ABCD]/g, '')
+    req.body.total = req.body.answer.length
     req.body.time = req.body.time * 60
     ExamModel.updateOne({ _id: req.params.id }, req.body, (err, r) => {
         if (err) return error(res, err)
