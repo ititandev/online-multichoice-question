@@ -439,9 +439,7 @@ router.get("/answers", (req, res) => {
         })
 })
 
-router.get("/answers/exams/:id", (req, res) => {
-    if (req.authz.role != "admin")
-        return fail(res, "Chỉ admin có thể thực hiện")
+function getAnswerbyExam(req, res) {
     if (!req.query.limit)
         req.query.limit = 10
     if (!req.query.page)
@@ -464,7 +462,6 @@ router.get("/answers/exams/:id", (req, res) => {
         .skip((req.query.page - 1) * req.query.limit)
         .limit(parseInt(req.query.limit))
         .exec((err, answers) => {
-            //TODO: update status
             if (err) return error(res, err)
             AnswerModel.countDocuments({
                 examId: new ObjectId(req.params.id),
@@ -493,6 +490,66 @@ router.get("/answers/exams/:id", (req, res) => {
             })
 
         })
+}
+
+router.get("/answers/exams/:id", (req, res) => {
+    if (req.authz.role != "admin")
+        return fail(res, "Chỉ admin có thể thực hiện")
+
+    ExamModel.findById(req.params.id, "time total datetime answer", (err, exam) => {
+        if (err) return error(res, err);
+        if (!exam)
+            return fail(res, "Bài kiểm tra không tồn tài")
+        exam.time = exam.time / 60
+        AnswerModel.find({
+            examId: new ObjectId(req.params.id),
+            status: "doing"
+        }, (err, answers) => {
+            if (err) return error(res, err)
+            answers.forEach(answer => {
+                pass = Math.round((Date.now() - answer.start) / 1000)
+                if (pass >= exam.time * 60) {
+                    answer.end = Date.now()
+                    answer.remain = 0
+                    answer.answer = answer.answer.toUpperCase()
+                    answer.correct = 0
+                    answer.status = "done"
+
+
+                    length = Math.min(answer.answer.length, exam.answer.length)
+                    for (let i = 0; i < length; i++) {
+                        answer.correct += (answer.answer[i] === exam.answer[i])
+                    }
+                    answer.point = Math.round((answer.correct / exam.total * 10) * 100) / 100
+                    AnswerModel.updateOne({ _id: answer.id }, answer, (err, answer) => {
+                        if (err) return error(res, err)
+                        exam._doc.status = "done"
+
+
+                        if (req.authz.role != "admin") {
+                            UserModel.findById(answer.userId, (err, user) => {
+                                if (err) return error(res, err)
+                                if (user.remain - exam.time <= 0) {
+                                    user.active = false
+                                    user.remain = 0
+                                }
+                                else {
+                                    user.active = true
+                                    user.remain = user.remain - exam.time
+                                }
+                                UserModel.updateOne({ _id: answer.userId }, user, err => {
+                                    if (err) return error(res, err)
+                                    return getAnswerbyExam(req, res)
+                                })
+                            })
+                        }
+                        else
+                            return getAnswerbyExam(req, res)
+                    })
+                }
+            });
+        })
+    })
 })
 
 router.post("/answers", (req, res) => {
