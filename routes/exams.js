@@ -492,7 +492,7 @@ function getAnswerbyExam(req, res) {
         })
 }
 
-router.get("/answers/exams/:id", (req, res) => {
+router.get("/answers/exams/:id", async (req, res) => {
     if (req.authz.role != "admin")
         return fail(res, "Chỉ admin có thể thực hiện")
 
@@ -506,48 +506,66 @@ router.get("/answers/exams/:id", (req, res) => {
             status: "doing"
         }, (err, answers) => {
             if (err) return error(res, err)
-            answers.forEach(answer => {
-                pass = Math.round((Date.now() - answer.start) / 1000)
-                if (pass >= exam.time * 60) {
-                    answer.end = Date.now()
-                    answer.remain = 0
-                    answer.answer = answer.answer.toUpperCase()
-                    answer.correct = 0
-                    answer.status = "done"
+            if (answers.length == 0)
+                return getAnswerbyExam(req)
+                    .then(result => { return success(res, result) })
+                    .catch(err => { return error(res, err) })
+            else {
+                let answerPromises = answers.map(answer => {
+                    return new Promise((resolve, reject) => {
+                        pass = Math.round((Date.now() - answer.start) / 1000)
+                        if (pass >= exam.time * 60) {
+                            answer.end = Date.now()
+                            answer.remain = 0
+                            answer.answer = answer.answer.toUpperCase()
+                            answer.correct = 0
+                            answer.status = "done"
 
 
-                    length = Math.min(answer.answer.length, exam.answer.length)
-                    for (let i = 0; i < length; i++) {
-                        answer.correct += (answer.answer[i] === exam.answer[i])
-                    }
-                    answer.point = Math.round((answer.correct / exam.total * 10) * 100) / 100
-                    AnswerModel.updateOne({ _id: answer.id }, answer, (err, answer) => {
-                        if (err) return error(res, err)
-                        exam._doc.status = "done"
+                            length = Math.min(answer.answer.length, exam.answer.length)
+                            for (let i = 0; i < length; i++) {
+                                answer.correct += (answer.answer[i] === exam.answer[i])
+                            }
+                            answer.point = Math.round((answer.correct / exam.total * 10) * 100) / 100
+                            AnswerModel.updateOne({ _id: answer.id }, answer, (err, answer) => {
+                                if (err) reject(err)
+                                exam._doc.status = "done"
 
 
-                        if (req.authz.role != "admin") {
-                            UserModel.findById(answer.userId, (err, user) => {
-                                if (err) return error(res, err)
-                                if (user.remain - exam.time <= 0) {
-                                    user.active = false
-                                    user.remain = 0
+                                if (req.authz.role != "admin") {
+                                    UserModel.findById(answer.userId, (err, user) => {
+                                        if (err) reject(err)
+                                        if (user.remain - exam.time <= 0) {
+                                            user.active = false
+                                            user.remain = 0
+                                        }
+                                        else {
+                                            user.active = true
+                                            user.remain = user.remain - exam.time
+                                        }
+                                        UserModel.updateOne({ _id: answer.userId }, user, err => {
+                                            if (err) reject(err)
+                                            resolve()
+                                        })
+                                    })
                                 }
                                 else {
-                                    user.active = true
-                                    user.remain = user.remain - exam.time
+                                    resolve()
                                 }
-                                UserModel.updateOne({ _id: answer.userId }, user, err => {
-                                    if (err) return error(res, err)
-                                    return getAnswerbyExam(req, res)
-                                })
                             })
                         }
-                        else
-                            return getAnswerbyExam(req, res)
+                        resolve()
                     })
-                }
-            });
+                })
+
+                Promise.all(answerPromises)
+                    .then(() => {
+                        getAnswerbyExam(req, res)
+                    })
+                    .catch((err) => {
+                        return error(res, err)
+                    })
+            }
         })
     })
 })
