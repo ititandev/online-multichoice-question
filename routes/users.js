@@ -265,7 +265,7 @@ module.exports = app => {
             newPassword: newPassword
           }, err => {
             if (err) return error(res, err)
-            return success(res, "Kiểm tra email để lấy mật khẩu mới");
+            return success(res, null, "Kiểm tra email để lấy mật khẩu mới");
           });
         })
       })
