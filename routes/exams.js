@@ -407,7 +407,7 @@ router.get("/answer/:id", (req, res) => {
         if (err) return error(res, err)
         if (!answer)
             return fail(res, "Bài làm không tồn tài")
-        if (answer.userId != req.authz.uid)
+        if (answer.userId != req.authz.uid && req.authz.role != "admin")
             return fail(res, "Chỉ được phép xem bài làm của bạn")
         ExamModel.findById(answer.examId, (err, exam) => {
             if (err) return error(res, err)
