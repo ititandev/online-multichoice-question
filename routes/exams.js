@@ -418,29 +418,6 @@ router.get("/answer/:id", (req, res) => {
     })
 })
 
-router.get("/answers", (req, res) => {
-    AnswerModel.find({ userId: new ObjectId(req.authz.uid) })
-        .select("start end point remain examId status")
-        .populate({
-            path: 'examId',
-            select: 'name subjectId',
-            populate: {
-                path: 'subjectId',
-                select: 'classId name',
-                populate: {
-                    path: 'classId',
-                    select: 'name'
-                }
-            }
-        })
-        .sort("-start")
-        .skip((req.query.page - 1) * req.query.limit)
-        .limit(parseInt(req.query.limit))
-        .exec((err, answers) => {
-            if (err) return error(res, err)
-        })
-})
-
 function getAnswerbyExam(req, res) {
     if (!req.query.limit)
         req.query.limit = 10
@@ -508,66 +485,62 @@ router.get("/answers/exams/:id", async (req, res) => {
             status: "doing"
         }, (err, answers) => {
             if (err) return error(res, err)
-            if (answers.length == 0)
-                return getAnswerbyExam(req)
-                    .then(result => { return success(res, result) })
-                    .catch(err => { return error(res, err) })
-            else {
-                let answerPromises = answers.map(answer => {
-                    return new Promise((resolve, reject) => {
-                        pass = Math.round((Date.now() - answer.start) / 1000)
-                        if (pass >= exam.time * 60) {
-                            answer.end = Date.now()
-                            answer.remain = 0
-                            answer.answer = answer.answer.toUpperCase()
-                            answer.correct = 0
-                            answer.status = "done"
+
+            let answerPromises = answers.map(answer => {
+                return new Promise((resolve, reject) => {
+                    pass = Math.round((Date.now() - answer.start) / 1000)
+                    if (pass >= exam.time * 60) {
+                        answer.end = Date.now()
+                        answer.remain = 0
+                        answer.answer = answer.answer.toUpperCase()
+                        answer.correct = 0
+                        answer.status = "done"
 
 
-                            length = Math.min(answer.answer.length, exam.answer.length)
-                            for (let i = 0; i < length; i++) {
-                                answer.correct += (answer.answer[i] === exam.answer[i])
-                            }
-                            answer.point = Math.round((answer.correct / exam.total * 10) * 100) / 100
-                            AnswerModel.updateOne({ _id: answer.id }, answer, (err, answer) => {
-                                if (err) reject(err)
-                                exam._doc.status = "done"
-
-
-                                if (req.authz.role != "admin") {
-                                    UserModel.findById(answer.userId, (err, user) => {
-                                        if (err) reject(err)
-                                        if (user.remain - exam.time <= 0) {
-                                            user.active = false
-                                            user.remain = 0
-                                        }
-                                        else {
-                                            user.active = true
-                                            user.remain = user.remain - exam.time
-                                        }
-                                        UserModel.updateOne({ _id: answer.userId }, user, err => {
-                                            if (err) reject(err)
-                                            resolve()
-                                        })
-                                    })
-                                }
-                                else {
-                                    resolve()
-                                }
-                            })
+                        length = Math.min(answer.answer.length, exam.answer.length)
+                        for (let i = 0; i < length; i++) {
+                            answer.correct += (answer.answer[i] === exam.answer[i])
                         }
-                        resolve()
-                    })
+                        answer.point = Math.round((answer.correct / exam.total * 10) * 100) / 100
+                        AnswerModel.updateOne({ _id: answer.id }, answer, (err, answer) => {
+                            if (err) reject(err)
+                            exam._doc.status = "done"
+
+
+                            if (req.authz.role != "admin") {
+                                UserModel.findById(answer.userId, (err, user) => {
+                                    if (err) reject(err)
+                                    if (user.remain - exam.time <= 0) {
+                                        user.active = false
+                                        user.remain = 0
+                                    }
+                                    else {
+                                        user.active = true
+                                        user.remain = user.remain - exam.time
+                                    }
+                                    UserModel.updateOne({ _id: answer.userId }, user, err => {
+                                        if (err) reject(err)
+                                        resolve()
+                                    })
+                                })
+                            }
+                            else {
+                                resolve()
+                            }
+                        })
+                    }
+                    resolve()
+                })
+            })
+
+            Promise.all(answerPromises)
+                .then(() => {
+                    getAnswerbyExam(req, res)
+                })
+                .catch((err) => {
+                    return error(res, err)
                 })
 
-                Promise.all(answerPromises)
-                    .then(() => {
-                        getAnswerbyExam(req, res)
-                    })
-                    .catch((err) => {
-                        return error(res, err)
-                    })
-            }
         })
     })
 })
