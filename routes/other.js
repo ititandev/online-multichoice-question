@@ -37,4 +37,8 @@ router.put("/homepage", (req, res) => {
     })
 })
 
+router.all("/*", (req, res) => {
+    return fail(res, "API không tồn tại, liên hệ nhà phát triển để biết thêm chi tiết.")
+})
+
 module.exports = router;

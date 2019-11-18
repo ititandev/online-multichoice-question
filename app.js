@@ -72,11 +72,11 @@ app.use((req, res, next) => {
 })
 
 app.use("/api/", usersRouter(app));
-app.use("/api/", otherRouter);
 app.use("/api/", classRouter);
 app.use("/api/", examRouter);
 app.use("/api/", lectureRouter);
 app.use("/api/", imageRouter);
+app.use("/api/", otherRouter);
 
 
 app.use(function (req, res, next) {
