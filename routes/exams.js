@@ -502,14 +502,11 @@ router.get("/answers/exams/:id", async (req, res) => {
                             answer.correct += (answer.answer[i] === exam.answer[i])
                         }
                         answer.point = Math.round((answer.correct / exam.total * 10) * 100) / 100
-                        AnswerModel.updateOne({ _id: answer.id }, answer, (err, answer) => {
+                        AnswerModel.updateOne({ _id: answer.id }, answer, (err, a) => {
                             if (err) reject(err)
-                            exam._doc.status = "done"
-
-
-                            if (req.authz.role != "admin") {
-                                UserModel.findById(answer.userId, (err, user) => {
-                                    if (err) reject(err)
+                            UserModel.findById(answer.userId, (err, user) => {
+                                if (err) reject(err)
+                                if (user.role != "admin") {
                                     if (user.remain - exam.time <= 0) {
                                         user.active = false
                                         user.remain = 0
@@ -522,11 +519,9 @@ router.get("/answers/exams/:id", async (req, res) => {
                                         if (err) reject(err)
                                         resolve()
                                     })
-                                })
-                            }
-                            else {
+                                }
                                 resolve()
-                            }
+                            })
                         })
                     }
                     resolve()
