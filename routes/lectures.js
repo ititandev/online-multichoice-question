@@ -5,7 +5,7 @@ const LectureModel = require("../schema/LectureModel");
 const { success, error, fail } = require("../common");
 
 router.get("/lectures", (req, res) => {
-    if (req.authz.role != 'admin')
+    if (req.authz.role != "admin" && req.authz.role != "teacher")
         return fail(res, "Chỉ admin có thể liệt kê tất cả các bài giảng")
     if (!req.query.limit)
         req.query.limit = 10
@@ -112,7 +112,7 @@ router.get("/lectures/contents/:id", (req, res) => {
 })
 
 router.post("/lectures", (req, res) => {
-    if (req.authz.role != "admin")
+    if (req.authz.role != "admin" && req.authz.role != "teacher")
         return fail(res, "Chỉ admin có thể tạo bài giảng")
     ContentModel.find({ _id: req.body.contentId }, (err, contents) => {
         if (err) return error(res, err)
@@ -131,20 +131,30 @@ router.post("/lectures", (req, res) => {
 })
 
 router.put("/lectures/:id", (req, res) => {
-    if (req.authz.role != "admin")
+    if (req.authz.role != "admin" && req.authz.role != "teacher")
         return fail(res, "Chỉ admin có thể chỉnh sửa bài giảng")
-    LectureModel.updateOne({ _id: req.params.id }, req.body, (err, r) => {
+    LectureModel.findById(req.params.id, (err, lecture) => {
         if (err) return error(res, err)
-        return success(res, null, "Chỉnh sửa bài giảng thành công")
+        if (lecture.userId != userId && req.authz.role == "teacher")
+            return fail(res, "Giáo viên không thể chỉnh sửa bài giảng của người khác")
+        LectureModel.updateOne({ _id: req.params.id }, req.body, (err, r) => {
+            if (err) return error(res, err)
+            return success(res, null, "Chỉnh sửa bài giảng thành công")
+        })
     })
 })
 
 router.delete("/lectures/:id", (req, res) => {
-    if (req.authz.role != "admin")
+    if (req.authz.role != "admin" && req.authz.role != "teacher")
         return fail(res, "Chỉ admin có thể xóa bài giảng")
-    LectureModel.deleteOne({ _id: req.params.id }, err => {
+    LectureModel.findById(req.params.id, (err, lecture) => {
         if (err) return error(res, err)
-        return success(res, null, "Xóa bài giảng thành công")
+        if (lecture.userId != userId && req.authz.role == "teacher")
+            return fail(res, "Giáo viên không thể xóa bài giảng của người khác")
+        LectureModel.deleteOne({ _id: req.params.id }, err => {
+            if (err) return error(res, err)
+            return success(res, null, "Xóa bài giảng thành công")
+        })
     })
 })
 
