@@ -149,6 +149,8 @@ module.exports = app => {
   })
 
   router.get("/users/export", (req, res) => {
+    if (req.authz.role != "admin")
+      return fail(res, "Không đủ quyền để xuất báo cáo tài khoản")
     UserModel.find((err, data) => {
       if (err) return error(res, err)
       const specification = {
