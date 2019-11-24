@@ -557,6 +557,9 @@ router.get("/answers/exams/:id", async (req, res) => {
 })
 
 router.get("/answers/exams/:id/export", (req, res) => {
+    if (req.authz.role != "admin" && req.authz.role != "teacher")
+        return fail(res, "Không đủ quyền xuất báo cáo bài làm")
+
     AnswerModel.find({
         examId: new ObjectId(req.params.id),
         status: "done"
