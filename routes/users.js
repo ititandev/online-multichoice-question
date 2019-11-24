@@ -170,7 +170,8 @@ module.exports = app => {
           name: req.body.name,
           phone: req.body.phone,
           password: hash,
-          active: true
+          active: true,
+          role: req.body.role
         });
 
         user.save(err => {
