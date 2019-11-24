@@ -8,15 +8,10 @@ const { createJWToken, verifyJWTToken } = require("../auth.js");
 const AnswerModel = require("../schema/AnswerModel");
 var ObjectId = require('mongoose').Types.ObjectId;
 const saltRounds = 10;
+const excel = require('node-excel-export');
 
 
 module.exports = app => {
-
-  router.get("/u", (req, res, next) => {
-    UserModel.find((err, data) => {
-      return success(res, data)
-    })
-  })
 
   router.get("/token", function (req, res, next) {
     return res.json(req.authz)
@@ -151,6 +146,51 @@ module.exports = app => {
     }
     else
       return fail(res, "Chỉ admin có thể get list of users")
+  })
+
+  router.get("/users/export", (req, res) => {
+    UserModel.find((err, data) => {
+      if (err) return error(res, err)
+      const specification = {
+        email: {
+          headerStyle: { font: { bold: true } },
+          displayName: 'Email',
+          width: 200
+        },
+        name: {
+          headerStyle: { font: { bold: true } },
+          displayName: 'Name',
+          width: 200
+        },
+        phone: {
+          headerStyle: { font: { bold: true } },
+          displayName: 'Phone',
+          width: 100
+        },
+        role: {
+          headerStyle: { font: { bold: true } },
+          displayName: "Role",
+          width: 80
+        },
+        active: {
+          headerStyle: { font: { bold: true } },
+          cellFormat: function (value, row) {
+            return (value) ? 'Active' : 'Inactive';
+          },
+          displayName: "Active",
+          width: 50
+        }
+      }
+
+      const report = excel.buildExport([{
+        heading: [],
+        specification: specification,
+        data: data
+      }]);
+
+      res.attachment('users.xlsx');
+      return res.send(report);
+    })
   })
 
   router.post("/users", (req, res) => {
