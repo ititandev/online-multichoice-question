@@ -135,6 +135,8 @@ router.put("/lectures/:id", (req, res) => {
         return fail(res, "Chỉ admin có thể chỉnh sửa bài giảng")
     LectureModel.findById(req.params.id, (err, lecture) => {
         if (err) return error(res, err)
+        if (!lecture)
+            return fail(res, "Bài giảng không tồn tại")
         if (lecture.userId != userId && req.authz.role == "teacher")
             return fail(res, "Giáo viên không thể chỉnh sửa bài giảng của người khác")
         LectureModel.updateOne({ _id: req.params.id }, req.body, (err, r) => {
@@ -149,6 +151,8 @@ router.delete("/lectures/:id", (req, res) => {
         return fail(res, "Chỉ admin có thể xóa bài giảng")
     LectureModel.findById(req.params.id, (err, lecture) => {
         if (err) return error(res, err)
+        if (!lecture)
+            return fail(res, "Bài giảng không tồn tại")
         if (lecture.userId != userId && req.authz.role == "teacher")
             return fail(res, "Giáo viên không thể xóa bài giảng của người khác")
         LectureModel.deleteOne({ _id: req.params.id }, err => {
