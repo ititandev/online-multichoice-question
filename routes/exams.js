@@ -118,13 +118,12 @@ router.get("/exams", (req, res) => {
 
 })
 
-router.get("/exams/export", (req, res) => {
-    req.authz.uid = "5db44f2e1d4f5b07ea4ea25e"
-    req.authz.role = "admin"
-    if (req.authz.role == "anony")
-        return fail(res, "Vui lòng đăng nhập trước khi thực hiện")
+router.get("/exams/users/:id/export", (req, res) => {
+    if (req.authz.role != "admin" && req.authz.role != "teacher")
+        return fail(res, "Không đủ quyền xuất báo cáo bài làm")
+
     AnswerModel.find({
-        userId: req.authz.uid,
+        userId: req.params.id,
         status: "done"
     })
         .select("_id point start")
