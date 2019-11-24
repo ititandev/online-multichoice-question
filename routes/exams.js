@@ -382,7 +382,7 @@ router.put("/exams/:id", (req, res) => {
         if (err) return error(res, err)
         if (!exam)
             return fail(res, "Bài kiểm tra không tồn tại")
-        if (exam.userId != userId && req.authz.role == "teacher")
+        if (exam.userId != req.authz.uid && req.authz.role == "teacher")
             return fail(res, "Giáo viên không thể chỉnh sửa bài kiểm tra của người khác")
         ExamModel.updateOne({ _id: req.params.id }, req.body, (err, r) => {
             if (err) return error(res, err)
@@ -398,7 +398,7 @@ router.delete("/exams/:id", (req, res) => {
         if (err) return error(res, err)
         if (!exam)
             return fail(res, "Bài kiểm tra không tồn tại")
-        if (exam.userId != userId && req.authz.role == "teacher")
+        if (exam.userId != req.authz.uid && req.authz.role == "teacher")
             return fail(res, "Giáo viên không thể xóa bài kiểm tra của người khác")
         ExamModel.deleteOne({ _id: req.params.id }, err => {
             if (err) return error(res, err)
