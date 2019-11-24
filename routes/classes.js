@@ -170,11 +170,16 @@ router.put("/contents/:id", (req, res) => {
 router.delete("/contents/:id", (req, res) => {
     if (req.authz.role != "admin")
         return fail(res, "Chỉ admin có thể xóa chủ đề")
-    ContentModel.deleteOne({ _id: req.params.id }, err => {
+
+    ExamModel.countDocuments({ contentId: ObjectId(req.params.id) }, (err, count) => {
         if (err) return error(res, err)
-        ExamModel.deleteMany({ contentId: ObjectId(req.params.id) }, err => {
+        if (count > 0)
+            return fail(res, "Vui lòng xóa tất cả các đề thi của chủ đề trước")
+        LectureModel.countDocuments({ contentId: ObjectId(req.params.id) }, (err, count) => {
             if (err) return error(res, err)
-            LectureModel.deleteMany({ contentId: ObjectId(req.params.id) }, err => {
+            if (count > 0)
+                return fail(res, "Vui lòng xóa tất cả các bài giảng của chủ đề trước")
+            ContentModel.deleteOne({ _id: req.params.id }, err => {
                 if (err) return error(res, err)
                 return success(res, null, "Xóa chủ đề thành công")
             })
