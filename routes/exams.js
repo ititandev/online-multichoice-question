@@ -118,6 +118,107 @@ router.get("/exams", (req, res) => {
 
 })
 
+router.get("/exams/export", (req, res) => {
+    req.authz.uid = "5db44f2e1d4f5b07ea4ea25e"
+    req.authz.role = "admin"
+    if (req.authz.role == "anony")
+        return fail(res, "Vui lòng đăng nhập trước khi thực hiện")
+    AnswerModel.find({
+        userId: req.authz.uid,
+        status: "done"
+    })
+        .select("_id point start")
+        .populate({
+            path: "examId",
+            select: "name contentId",
+            populate: {
+                path: 'contentId',
+                select: 'name subjectId',
+                populate: {
+                    path: 'subjectId',
+                    select: 'classId name',
+                    populate: {
+                        path: 'classId',
+                        select: 'name'
+                    }
+                }
+            }
+        })
+        .sort("-start")
+        .exec((err, answers) => {
+            if (err) return error(res, err)
+
+            if (!answers || answers.length == 0)
+                return fail(res, "Đề thi chưa được làm lần nào")
+
+            const specification = {
+                className: {
+                    headerStyle: { font: { bold: true } },
+                    displayName: 'Lớp',
+                    cellFormat: function (value, element) {
+                        if (!element
+                            || !element.examId
+                            || !element.examId.contentId
+                            || !element.examId.contentId.subjectId
+                            || !element.examId.contentId.subjectId.classId)
+                            return ""
+                        return element.examId.contentId.subjectId.classId.name
+                    },
+                    width: 100
+                },
+                subjectName: {
+                    headerStyle: { font: { bold: true } },
+                    displayName: 'Môn học',
+                    cellFormat: function (value, element) {
+                        if (!element
+                            || !element.examId
+                            || !element.examId.contentId
+                            || !element.examId.contentId.subjectId)
+                            return ""
+                        return element.examId.contentId.subjectId.name
+                    },
+                    width: 200
+                },
+                contentName: {
+                    headerStyle: { font: { bold: true } },
+                    displayName: 'Chủ đề',
+                    cellFormat: function (value, element) {
+                        if (!element
+                            || !element.examId
+                            || !element.examId.contentId)
+                            return ""
+                        return element.examId.contentId.name
+                    },
+                    width: 200
+                },
+                time: {
+                    headerStyle: { font: { bold: true } },
+                    displayName: 'Thời gian',
+                    cellFormat: function (value, row) {
+                        return row.start.toString()
+                    },
+                    width: 400
+                },
+                point: {
+                    headerStyle: { font: { bold: true } },
+                    displayName: 'Điểm',
+                    cellFormat: function (value, row) {
+                        return row.point
+                    },
+                    width: 50
+                }
+            }
+
+            const report = excel.buildExport([{
+                specification: specification,
+                data: answers
+            }]);
+
+            res.attachment("answers.xlsx");
+            return res.send(report);
+        })
+})
+
 router.get("/exams/:id", (req, res) => {
     if (req.authz.role != "admin" && req.authz.role != "teacher")
         return fail(res, "Chỉ admin có thể thực hiện")
