@@ -7,6 +7,7 @@ const AnswerModel = require("../schema/AnswerModel");
 const UserModel = require("../schema/UserModel");
 const { success, error, fail } = require("../common");
 var ObjectId = require('mongoose').Types.ObjectId;
+const excel = require('node-excel-export');
 
 
 
@@ -553,6 +554,79 @@ router.get("/answers/exams/:id", async (req, res) => {
 
         })
     })
+})
+
+router.get("/answers/exams/:id/export", (req, res) => {
+    AnswerModel.find({
+        examId: new ObjectId(req.params.id),
+        status: "done"
+    })
+        .select("point start correct")
+        .populate({
+            path: "userId",
+            select: "name email"
+        })
+        .populate({
+            path: "examId",
+            select: "total name"
+        })
+        .sort('-start')
+        .exec((err, answers) => {
+            if (err) return error(res, err)
+            if (!answers || answers.length == 0)
+                return fail(res, "Đề thi chưa được làm lần nào")
+
+            const specification = {
+                name: {
+                    headerStyle: { font: { bold: true } },
+                    displayName: 'Tên',
+                    cellFormat: function (value, row) {
+                        return row.userId.name
+                    },
+                    width: 200
+                },
+                email: {
+                    headerStyle: { font: { bold: true } },
+                    displayName: 'Email',
+                    cellFormat: function (value, row) {
+                        return row.userId.email
+                    },
+                    width: 200
+                },
+                time: {
+                    headerStyle: { font: { bold: true } },
+                    displayName: 'Thời gian',
+                    cellFormat: function (value, row) {
+                        return row.start.toString()
+                    },
+                    width: 400
+                },
+                correct: {
+                    headerStyle: { font: { bold: true } },
+                    displayName: 'Đúng/Tổng số',
+                    cellFormat: function (value, row) {
+                        return row.correct + "/" + row.examId.total
+                    },
+                    width: 120
+                },
+                point: {
+                    headerStyle: { font: { bold: true } },
+                    displayName: 'Điểm',
+                    cellFormat: function (value, row) {
+                        return row.point
+                    },
+                    width: 50
+                }
+            }
+
+            const report = excel.buildExport([{
+                specification: specification,
+                data: answers
+            }]);
+
+            res.attachment(answers[0].examId.name + ".xlsx");
+            return res.send(report);
+        })
 })
 
 router.post("/answers", (req, res) => {
