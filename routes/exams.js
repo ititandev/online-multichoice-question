@@ -118,7 +118,7 @@ router.get("/exams", (req, res) => {
 })
 
 router.get("/exams/:id", (req, res) => {
-    if (req.authz.role != "admin")
+    if (req.authz.role != "admin" && req.authz.role != "teacher")
         return fail(res, "Chỉ admin có thể thực hiện")
     ExamModel.findById(req.params.id, (err, exam) => {
         if (err) return error(res, err)
@@ -202,7 +202,7 @@ router.get("/exam/:id", (req, res) => {
                                     exam._doc.answers = answers
                                     exam.answer = undefined
 
-                                    if (req.authz.role != "admin") {
+                                    if (req.authz.role != "admin" && req.authz.role != "teacher") {
                                         UserModel.findById(req.authz.uid, (err, user) => {
                                             if (err) return error(res, err)
                                             if (user.remain - exam.time <= 0) {
@@ -350,7 +350,7 @@ router.get("/examslectures/contents/:id", (req, res) => {
 })
 
 router.post("/exams", (req, res) => {
-    if (req.authz.role != "admin")
+    if (req.authz.role != "admin" && req.authz.role != "teacher")
         return fail(res, "Chỉ admin có thể tạo bài kiểm tra")
     ContentModel.find({ _id: req.body.contentId }, (err, contents) => {
         if (err) return error(res, err)
@@ -363,6 +363,7 @@ router.post("/exams", (req, res) => {
             req.body.answer = req.body.answer.toUpperCase().replace(/[^ABCD]/g, '')
             req.body.total = req.body.answer.length
             req.body.time = req.body.time * 60
+            req.body.userId = req.authz.uid
             ExamModel.create(req.body, (err, exam) => {
                 if (err) return error(res, err)
                 return success(res, exam)
@@ -372,25 +373,35 @@ router.post("/exams", (req, res) => {
 })
 
 router.put("/exams/:id", (req, res) => {
-    if (req.authz.role != "admin")
+    if (req.authz.role != "admin" && req.authz.role != "teacher")
         return fail(res, "Chỉ admin có thể chỉnh sửa bài kiểm tra")
     req.body.answer = req.body.answer.toUpperCase().replace(/[^ABCD]/g, '')
     req.body.total = req.body.answer.length
     req.body.time = req.body.time * 60
-    ExamModel.updateOne({ _id: req.params.id }, req.body, (err, r) => {
+    ExamModel.findById(req.params.id, (err, exam) => {
         if (err) return error(res, err)
-        return success(res, null, "Chỉnh sửa bài kiểm tra thành công")
+        if (exam.userId != userId && req.authz.role == "teacher")
+            return fail(res, "Giáo viên không thể chỉnh sửa bài kiểm tra của người khác")
+        ExamModel.updateOne({ _id: req.params.id }, req.body, (err, r) => {
+            if (err) return error(res, err)
+            return success(res, null, "Chỉnh sửa bài kiểm tra thành công")
+        })
     })
 })
 
 router.delete("/exams/:id", (req, res) => {
-    if (req.authz.role != "admin")
+    if (req.authz.role != "admin" && req.authz.role != "teacher")
         return fail(res, "Chỉ admin có thể xóa bài kiểm tra")
-    ExamModel.deleteOne({ _id: req.params.id }, err => {
+    ExamModel.findById(req.params.id, (err, exam) => {
         if (err) return error(res, err)
-        AnswerModel.deleteMany({ examId: ObjectId(req.params.id) }, err => {
+        if (exam.userId != userId && req.authz.role == "teacher")
+            return fail(res, "Giáo viên không thể xóa bài kiểm tra của người khác")
+        ExamModel.deleteOne({ _id: req.params.id }, err => {
             if (err) return error(res, err)
-            return success(res, null, "Xóa bài kiểm tra thành công")
+            AnswerModel.deleteMany({ examId: ObjectId(req.params.id) }, err => {
+                if (err) return error(res, err)
+                return success(res, null, "Xóa bài kiểm tra thành công")
+            })
         })
     })
 })
@@ -407,7 +418,7 @@ router.get("/answer/:id", (req, res) => {
         if (err) return error(res, err)
         if (!answer)
             return fail(res, "Bài làm không tồn tài")
-        if (answer.userId != req.authz.uid && req.authz.role != "admin")
+        if (answer.userId != req.authz.uid && req.authz.role != "admin" && req.authz.role != "teacher")
             return fail(res, "Chỉ được phép xem bài làm của bạn")
         ExamModel.findById(answer.examId, (err, exam) => {
             if (err) return error(res, err)
@@ -472,7 +483,7 @@ function getAnswerbyExam(req, res) {
 }
 
 router.get("/answers/exams/:id", async (req, res) => {
-    if (req.authz.role != "admin")
+    if (req.authz.role != "admin" && req.authz.role != "teacher")
         return fail(res, "Chỉ admin có thể thực hiện")
 
     ExamModel.findById(req.params.id, "time total datetime answer", (err, exam) => {
@@ -613,7 +624,7 @@ router.put("/answers/:id", (req, res) => {
                 req.body.point = Math.round((req.body.correct / exam.total * 10) * 100) / 100
                 AnswerModel.updateOne({ _id: req.params.id }, req.body, (err, answers) => {
                     if (err) return error(res, err)
-                    if (req.authz.role != "admin") {
+                    if (req.authz.role != "admin" && req.authz.role != "teacher") {
                         UserModel.findById(req.authz.uid, (err, user) => {
                             if (err) return error(res, err)
                             if (user.remain - exam.time / 60 <= 0) {

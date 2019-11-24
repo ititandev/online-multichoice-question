@@ -2,15 +2,16 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const ExamSchema = new Schema({
     name: { type: String, required: true },
-    examUrl: { type: String, require: true },
+    examUrl: { type: String, required: true },
     answer: { type: String, required: true },
     explainUrl: { type: String, required: true },
     time: { type: Number, required: true },
     total: { type: Number, required: true },
-    password: {type: String, default: ""},
+    password: { type: String, default: "" },
     note: { type: String, required: false },
     contentId: { type: Schema.Types.ObjectId, ref: 'contents', required: true },
-    datetime: { type: Date, default: Date.now }
+    datetime: { type: Date, default: Date.now },
+    userId: { type: Schema.Types.ObjectId, ref: 'users', default: Date.now }
 });
 const ExamModel = mongoose.model('exams', ExamSchema);
 
