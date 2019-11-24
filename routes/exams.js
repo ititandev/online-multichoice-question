@@ -65,7 +65,7 @@ router.get("/exams", (req, res) => {
             })
     }
     else {
-        if (req.authz.role != 'admin')
+        if (req.authz.role != "admin" && req.authz.role != "teacher")
             return fail(res, "Chỉ admin có thể liệt kê tất cả các bài kiểm tra")
         if (!req.query.limit)
             req.query.limit = 10
