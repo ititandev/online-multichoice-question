@@ -194,7 +194,7 @@ router.get("/exams/users/:id/export", (req, res) => {
                     headerStyle: { font: { bold: true } },
                     displayName: 'Thời gian',
                     cellFormat: function (value, row) {
-                        return row.start.toString()
+                        return row.start
                     },
                     width: 400
                 },
@@ -700,7 +700,7 @@ router.get("/answers/exams/:id/export", (req, res) => {
                     headerStyle: { font: { bold: true } },
                     displayName: 'Thời gian',
                     cellFormat: function (value, row) {
-                        return row.start.toString()
+                        return row.start
                     },
                     width: 400
                 },
