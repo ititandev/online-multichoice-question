@@ -33,7 +33,8 @@ mailer.extend(app, {
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "jade");
 
-mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true });
+mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+  .catch(error => handleError(error));
 
 app.use(function (req, res, next) {
   res.setHeader("Access-Control-Allow-Origin", "*");

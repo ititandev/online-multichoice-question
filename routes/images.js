@@ -11,7 +11,7 @@ var router = express.Router();
 let gfs;
 
 
-const conn = mongoose.createConnection(process.env.MONGODB_URI);
+const conn = mongoose.createConnection(process.env.MONGODB_URI, {useNewUrlParser: true, useUnifiedTopology: true});
 
 conn.once("open", () => {
     gfs = Grid(conn.db, mongoose.mongo);
