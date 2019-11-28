@@ -148,6 +148,15 @@ module.exports = app => {
       return fail(res, "Chỉ admin có thể get list of users")
   })
 
+  router.get("/users/count", (req, res) => {
+    if (req.authz.role != "admin")
+      return fail(res, "Chỉ admin có thể thực hiện")
+    UserModel.countDocuments({ active: 'false' }, (err, count) => {
+      if (err) return error(res, err)
+      return success(res, { inactiveCount: count })
+    })
+  })
+
   router.get("/users/export", (req, res) => {
     if (req.authz.role != "admin")
       return fail(res, "Không đủ quyền để xuất báo cáo tài khoản")
