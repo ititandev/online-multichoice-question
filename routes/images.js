@@ -40,7 +40,9 @@ const storage = new GridFsStorage({
 
 const upload = multer({ storage });
 
-router.post("/images", upload.single("file"), (req, res, err) => {
+router.post("/images", upload.single("upload"), (req, res, err) => {
+    console.log(req)
+    console.log(req.headers)
     return res.json({
         success: true,
         url: req.protocol + "://" + req.get("host") + "/api/images/" + req.filename
