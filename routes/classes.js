@@ -35,7 +35,7 @@ router.get("/classes/subjects", (req, res) => {
 })
 
 router.post("/classes", (req, res) => {
-    if (req.authz.role != "admin")
+    if (req.authz.role != "admin" && req.authz.role != "teacher")
         return fail(res, "Chỉ admin có thể tạo lớp học")
     ClassModel.find({ name: req.body.name }, (err, classes) => {
         if (err) return error(res, err)
@@ -50,7 +50,7 @@ router.post("/classes", (req, res) => {
 })
 
 router.put("/classes/:id", (req, res) => {
-    if (req.authz.role != "admin")
+    if (req.authz.role != "admin" && req.authz.role != "teacher")
         return fail(res, "Chỉ admin có thể chỉnh sửa lớp học")
     ClassModel.updateOne({ _id: req.params.id }, { name: req.body.name }, (err, r) => {
         if (err) return error(res, err)
@@ -59,7 +59,7 @@ router.put("/classes/:id", (req, res) => {
 })
 
 router.delete("/classes/:id", (req, res) => {
-    if (req.authz.role != "admin")
+    if (req.authz.role != "admin" && req.authz.role != "teacher")
         return fail(res, "Chỉ admin có thể xóa lớp học")
 
     SubjectModel.countDocuments({ classId: ObjectId(req.params.id) }, (err, count) => {
@@ -86,7 +86,7 @@ router.get("/subjects/:id", (req, res) => {
 })
 
 router.post("/subjects", (req, res) => {
-    if (req.authz.role != "admin")
+    if (req.authz.role != "admin" && req.authz.role != "teacher")
         return fail(res, "Chỉ admin có thể tạo môn học")
     ClassModel.find({ _id: req.body.classId }, (err, classes) => {
         if (err) return error(res, err)
@@ -105,7 +105,7 @@ router.post("/subjects", (req, res) => {
 })
 
 router.put("/subjects/:id", (req, res) => {
-    if (req.authz.role != "admin")
+    if (req.authz.role != "admin" && req.authz.role != "teacher")
         return fail(res, "Chỉ admin có thể chỉnh sửa môn học")
     SubjectModel.updateOne({ _id: req.params.id }, { name: req.body.name }, (err, r) => {
         if (err) return error(res, err)
@@ -114,7 +114,7 @@ router.put("/subjects/:id", (req, res) => {
 })
 
 router.delete("/subjects/:id", (req, res) => {
-    if (req.authz.role != "admin")
+    if (req.authz.role != "admin" && req.authz.role != "teacher")
         return fail(res, "Chỉ admin có thể xóa môn học")
     ContentModel.countDocuments({ subjectId: req.params.id }, (err, count) => {
         if (err) return error(res, err)
@@ -140,7 +140,7 @@ router.get("/contents/:id", (req, res) => {
 })
 
 router.post("/contents", (req, res) => {
-    if (req.authz.role != "admin")
+    if (req.authz.role != "admin" && req.authz.role != "teacher")
         return fail(res, "Chỉ admin có thể tạo chủ đề")
     SubjectModel.find({ _id: req.body.subjectId }, (err, subjects) => {
         if (err) return error(res, err)
@@ -159,7 +159,7 @@ router.post("/contents", (req, res) => {
 })
 
 router.put("/contents/:id", (req, res) => {
-    if (req.authz.role != "admin")
+    if (req.authz.role != "admin" && req.authz.role != "teacher")
         return fail(res, "Chỉ admin có thể chỉnh sửa chủ đề")
     ContentModel.updateOne({ _id: req.params.id }, { name: req.body.name }, (err, r) => {
         if (err) return error(res, err)
@@ -168,7 +168,7 @@ router.put("/contents/:id", (req, res) => {
 })
 
 router.delete("/contents/:id", (req, res) => {
-    if (req.authz.role != "admin")
+    if (req.authz.role != "admin" && req.authz.role != "teacher")
         return fail(res, "Chỉ admin có thể xóa chủ đề")
 
     ExamModel.countDocuments({ contentId: ObjectId(req.params.id) }, (err, count) => {
