@@ -3,7 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "nodemon ./bin/www"
+    "start": "nodemon ./bin/www",
+    "build": "rm -rf ./public && cd ../mcq-frontend/mcq-frontend/ && git pull origin frontend && yarn build && cp -rf build ../../online-multichoice-question/public"
   },
   "dependencies": {
     "async": "^3.0.0",
