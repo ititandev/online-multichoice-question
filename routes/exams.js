@@ -119,7 +119,7 @@ router.get("/exams", (req, res) => {
 })
 
 router.get("/exams/users/:id/export", (req, res) => {
-    if (req.authz.role != "admin" && req.authz.role != "teacher")
+    if (req.authz.role != "admin")
         return fail(res, "Không đủ quyền xuất báo cáo bài làm")
 
     AnswerModel.find({
@@ -657,7 +657,7 @@ router.get("/answers/exams/:id", async (req, res) => {
 })
 
 router.get("/answers/exams/:id/export", (req, res) => {
-    if (req.authz.role != "admin" && req.authz.role != "teacher")
+    if (req.authz.role != "admin")
         return fail(res, "Không đủ quyền xuất báo cáo bài làm")
 
     AnswerModel.find({
