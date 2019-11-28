@@ -11,7 +11,7 @@ var router = express.Router();
 let gfs;
 
 
-const conn = mongoose.createConnection(process.env.MONGODB_URI, {useNewUrlParser: true, useUnifiedTopology: true});
+const conn = mongoose.createConnection(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true });
 
 conn.once("open", () => {
     gfs = Grid(conn.db, mongoose.mongo);
@@ -40,13 +40,16 @@ const storage = new GridFsStorage({
 
 const upload = multer({ storage });
 
-router.post("/images", upload.single("img"), (req, res, err) => {
-    success(res, req.protocol + "://" + req.get("host") + "/api/images/" + req.filename)
+router.post("/images", upload.single("file"), (req, res, err) => {
+    return res.json({
+        success: true,
+        url: req.protocol + "://" + req.get("host") + "/api/images/" + req.filename
+    })
 });
 
 router.get("/images/:filename", (req, res) => {
     gfs.files.findOne({ filename: req.params.filename }, (err, file) => {
-        if (!file || file.length === 0) 
+        if (!file || file.length === 0)
             return fail(res, "File not found")
 
         if (file.contentType === "image/jpeg" || file.contentType === "image/png") {
