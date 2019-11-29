@@ -133,6 +133,7 @@ router.delete("/subjects/:id", (req, res) => {
 router.get("/contents/:id", (req, res) => {
     ContentModel.find({ subjectId: req.params.id })
         // .populate("subjectId")
+        .sort("name")
         .exec((err, contents) => {
             if (err) return error(res, err)
             return success(res, contents)

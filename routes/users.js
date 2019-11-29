@@ -127,7 +127,7 @@ module.exports = app => {
 
       UserModel.find(req.query.active ? { active: req.query.active } : {})
         .select("_id email name role phone datetime active")
-        .sort('email')
+        .sort('-datetime')
         .skip((req.query.page - 1) * req.query.limit)
         .limit(parseInt(req.query.limit))
         .exec((err, users) => {
