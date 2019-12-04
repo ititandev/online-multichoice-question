@@ -119,33 +119,32 @@ module.exports = app => {
   });
 
   router.get("/users", (req, res) => {
-    if (req.authz.role == "admin") {
-      if (!req.query.limit)
-        req.query.limit = 10
-      if (!req.query.page)
-        req.query.page = 1
+    if (req.authz.role != "admin")
+      return fail(res, "Chỉ admin có thể thực hiện")
+      
+    if (!req.query.limit)
+      req.query.limit = 10
+    if (!req.query.page)
+      req.query.page = 1
 
-      UserModel.find(req.query.active ? { active: req.query.active } : {})
-        .select("_id email name role phone datetime active")
-        .sort('-datetime')
-        .skip((req.query.page - 1) * req.query.limit)
-        .limit(parseInt(req.query.limit))
-        .exec((err, users) => {
-          if (err) return error(res, err)
-          else {
-            UserModel.countDocuments(req.query.active ? { active: req.query.active } : {}, (err, totalPage) => {
-              if (err) return error(res, err)
-              totalPage = Math.ceil(totalPage / req.query.limit)
-              previous = req.query.page > 1 ? req.protocol + "://" + req.get("host") + "/api/users?page=" + (Number(req.query.page) - 1) + "&limit=" + req.query.limit : null
-              next = req.query.page < totalPage ? req.protocol + "://" + req.get("host") + "/api/users?page=" + (Number(req.query.page) + 1) + "&limit=" + req.query.limit : null
-              data = { totalPage: totalPage, page: req.query.page, data: users, previous: previous, next: next }
-              return success(res, data)
-            })
-          }
-        })
-    }
-    else
-      return fail(res, "Chỉ admin có thể get list of users")
+    UserModel.find(req.query.active ? { active: req.query.active } : {})
+      .select("_id email name role phone datetime active remain")
+      .sort('-datetime')
+      .skip((req.query.page - 1) * req.query.limit)
+      .limit(parseInt(req.query.limit))
+      .exec((err, users) => {
+        if (err) return error(res, err)
+        else {
+          UserModel.countDocuments(req.query.active ? { active: req.query.active } : {}, (err, totalPage) => {
+            if (err) return error(res, err)
+            totalPage = Math.ceil(totalPage / req.query.limit)
+            previous = req.query.page > 1 ? req.protocol + "://" + req.get("host") + "/api/users?page=" + (Number(req.query.page) - 1) + "&limit=" + req.query.limit : null
+            next = req.query.page < totalPage ? req.protocol + "://" + req.get("host") + "/api/users?page=" + (Number(req.query.page) + 1) + "&limit=" + req.query.limit : null
+            data = { totalPage: totalPage, page: req.query.page, data: users, previous: previous, next: next }
+            return success(res, data)
+          })
+        }
+      })
   })
 
   router.get("/users/count", (req, res) => {
@@ -264,10 +263,9 @@ module.exports = app => {
       if (req.body.name) user.name = req.body.name
       if (req.body.phone) user.phone = req.body.phone
       if (req.body.role) user.role = req.body.role
-      if (req.body.active) {
-        user.active = req.body.active
-        user.remain = 18000
-      }
+      if (req.body.active) user.active = req.body.active
+      if (req.body.remain) user.remain = req.body.remain
+
       if (req.body.password) {
         hash = bcrypt.hashSync(req.body.password, saltRounds);
         user.password = hash;
