@@ -58,21 +58,23 @@ router.get("/lectures", (req, res) => {
 
 
 router.get("/lectures/:id", (req, res) => {
-    if (req.authz.role != "admin" && req.authz.role != "teacher") {
-        LectureModel.findById(req.params.id, (err, lecture) => {
-            if (err) return error(res, err)
-            if (lecture.password)
-                if (req.body.password != lecture.password)
-                    return fail(res, "Sai mật khẩu")
-            return success(res, lecture)
-        })
-    }
-    else {
-        LectureModel.findById(req.params.id, (err, lecture) => {
-            if (err) return error(res, err)
-            return success(res, lecture)
-        })
-    }
+    if (req.authz.role != "admin" && req.authz.role != "teacher")
+        return fail(res, "Chỉ admin có thể thực hiện")
+
+    LectureModel.findById(req.params.id, (err, lecture) => {
+        if (err) return error(res, err)
+        return success(res, lecture)
+    })
+})
+
+router.post("/lectures/:id", (req, res) => {
+    LectureModel.findById(req.params.id, (err, lecture) => {
+        if (err) return error(res, err)
+        if (lecture.password)
+            if (req.body.password != lecture.password)
+                return fail(res, "Sai mật khẩu")
+        return success(res, lecture)
+    })
 })
 
 router.get("/lectures/contents/:id", (req, res) => {
@@ -151,7 +153,7 @@ router.post("/lectures", (req, res) => {
 router.put("/lectures/:id", (req, res) => {
     if (req.authz.role != "admin" && req.authz.role != "teacher")
         return fail(res, "Chỉ admin có thể chỉnh sửa bài giảng")
-        
+
     LectureModel.findById(req.params.id, (err, lecture) => {
         if (err) return error(res, err)
         if (!lecture)
