@@ -264,7 +264,7 @@ module.exports = app => {
       if (req.body.phone) user.phone = req.body.phone
       if (req.body.role) user.role = req.body.role
       if (req.body.active != undefined) user.active = req.body.active
-      if (req.body.remain) user.remain = req.body.remain
+      if (req.body.remain != undefined) user.remain = req.body.remain
 
       if (req.body.password) {
         hash = bcrypt.hashSync(req.body.password, saltRounds);
