@@ -121,7 +121,7 @@ module.exports = app => {
   router.get("/users", (req, res) => {
     if (req.authz.role != "admin")
       return fail(res, "Chỉ admin có thể thực hiện")
-      
+
     if (!req.query.limit)
       req.query.limit = 10
     if (!req.query.page)
@@ -263,7 +263,7 @@ module.exports = app => {
       if (req.body.name) user.name = req.body.name
       if (req.body.phone) user.phone = req.body.phone
       if (req.body.role) user.role = req.body.role
-      if (req.body.active) user.active = req.body.active
+      if (req.body.active != undefined) user.active = req.body.active
       if (req.body.remain) user.remain = req.body.remain
 
       if (req.body.password) {
