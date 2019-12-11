@@ -68,6 +68,9 @@ router.get("/lectures/:id", (req, res) => {
 })
 
 router.post("/lectures/:id", (req, res) => {
+    if (req.authz.role == "anony")
+        return fail(res, "Vui lòng đăng nhập trước khi xem bài giảng")
+
     LectureModel.findById(req.params.id, (err, lecture) => {
         if (err) return error(res, err)
         if (lecture.password)
