@@ -72,6 +72,9 @@ router.get("/exams", (req, res) => {
             req.query.limit = 10
         if (!req.query.page)
             req.query.page = 1
+        if (!req.query.sort)
+            req.query.sort = "-datetime"
+            
         ExamModel.find()
             .select("name datetime contentId password")
             .populate({
@@ -86,7 +89,7 @@ router.get("/exams", (req, res) => {
                     }
                 }
             })
-            .sort('-datetime')
+            .sort(req.query.sort)
             .skip((req.query.page - 1) * req.query.limit)
             .limit(parseInt(req.query.limit))
             .exec((err, exams) => {
