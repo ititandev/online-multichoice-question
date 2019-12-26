@@ -126,10 +126,12 @@ module.exports = app => {
       req.query.limit = 10
     if (!req.query.page)
       req.query.page = 1
+    if (!req.query.sort)
+      req.query.sort = "-datetime"
 
     UserModel.find(req.query.active ? { active: req.query.active } : {})
       .select("_id email name role phone datetime active remain")
-      .sort('-datetime')
+      .sort(req.query.sort)
       .skip((req.query.page - 1) * req.query.limit)
       .limit(parseInt(req.query.limit))
       .exec((err, users) => {

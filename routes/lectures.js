@@ -12,6 +12,9 @@ router.get("/lectures", (req, res) => {
         req.query.limit = 10
     if (!req.query.page)
         req.query.page = 1
+    if (!req.query.sort)
+        req.query.sort = "-datetime"
+
     LectureModel.find()
         .populate({
             path: 'contentId',
@@ -25,7 +28,7 @@ router.get("/lectures", (req, res) => {
                 }
             }
         })
-        .sort('-datetime')
+        .sort(req.query.sort)
         .skip((req.query.page - 1) * req.query.limit)
         .limit(parseInt(req.query.limit))
         .exec((err, lectures) => {

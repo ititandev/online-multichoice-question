@@ -3,6 +3,8 @@ var router = express.Router();
 const ConfigModel = require("../schema/ConfigModel");
 const { success, error, fail } = require("../common")
 
+const exec = require('child_process').exec;
+
 router.get("/homepage", (req, res) => {
     ConfigModel.findOne({ name: "homepage" }, (err, config) => {
         if (err) return error(res, err)
@@ -35,6 +37,31 @@ router.put("/homepage", (req, res) => {
         }
 
     })
+})
+
+router.get("/backup", async (req, res) => {
+    // if (req.authz.role != "admin")
+    //     return fail(res, "Chỉ admin có thể backup")
+
+
+    exec(process.env.MONGODB_BACKUP_CMD, (err, stdout, stderr) => {
+            // console.log(stdout);
+            // console.log(stderr);
+            // if (err !== null) {
+            //     console.log(`exec error: ${err}`);
+            // }
+        });
+
+
+    // exec(process.env.MONGODB_BACKUP_CMD)
+    //     .then(result => {
+    //         success(res, result)
+    //     })
+    //     .catch(err => {
+    //         error(res, err)
+    //     })
+
+
 })
 
 router.all("/*", (req, res) => {
