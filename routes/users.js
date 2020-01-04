@@ -17,25 +17,6 @@ module.exports = app => {
     return res.json(req.authz)
   });
 
-
-  router.get("/ip", (req, res, next) => {
-    var options = {
-      host: 'ipv4bot.whatismyipaddress.com',
-      port: 80,
-      path: '/'
-    };
-    http.get(options, function (r) {
-      r.on("data", function (chunk) {
-        str = "IP: " + chunk
-        console.log(str);
-        return res.json({ "ip": str })
-      });
-    }).on('error', function (e) {
-      console.log("error: " + e.message);
-    });
-  }
-  );
-
   router.post("/signup", (req, res) => {
     UserModel.find({ email: req.body.email }, (err, data) => {
       if (err) {
