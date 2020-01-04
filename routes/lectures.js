@@ -15,7 +15,11 @@ router.get("/lectures", (req, res) => {
     if (!req.query.sort)
         req.query.sort = "-datetime"
 
-    LectureModel.find()
+    query = req.query.search ? {
+        name: { $regex: req.query.search, $options: "i" }
+    } : {}
+
+    LectureModel.find(query)
         .populate({
             path: 'contentId',
             select: 'name subjectId',
@@ -93,7 +97,12 @@ router.get("/lectures/contents/:id", (req, res) => {
     if (!req.query.page)
         req.query.page = 1
 
-    LectureModel.find({ contentId: req.params.id })
+    query = req.query.search ? {
+        name: { $regex: req.query.search, $options: "i" },
+        contentId: req.params.id
+    } : { contentId: req.params.id }
+
+    LectureModel.find(query)
         .populate({
             path: 'contentId',
             select: 'name subjectId',
