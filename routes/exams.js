@@ -74,8 +74,12 @@ router.get("/exams", (req, res) => {
             req.query.page = 1
         if (!req.query.sort)
             req.query.sort = "-datetime"
-            
-        ExamModel.find()
+
+        query = req.query.search ? {
+            name: { $regex: req.query.search, $options: "i" }
+        } : {}
+
+        ExamModel.find(query)
             .select("name datetime contentId password")
             .populate({
                 path: 'contentId',
@@ -356,12 +360,21 @@ router.get("/exam/:id", (req, res) => {
 })
 
 router.get("/exams/contents/:id", (req, res) => {
+    if (req.authz.role != "admin" && req.authz.role != "teacher")
+        return fail(res, "Chỉ admin có thể liệt kê tất cả các bài kiểm tra")
     if (!req.query.limit)
         req.query.limit = 10
     if (!req.query.page)
         req.query.page = 1
+    if (!req.query.sort)
+        req.query.sort = "-datetime"
 
-    ExamModel.find({ contentId: req.params.id })
+    query = req.query.search ? {
+        name: { $regex: req.query.search, $options: "i" },
+        contentId: req.params.id
+    } : { contentId: req.params.id }
+
+    ExamModel.find(query)
         .select("name datetime contentId password total time")
         .populate({
             path: 'contentId',
