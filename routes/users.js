@@ -110,7 +110,18 @@ module.exports = app => {
     if (!req.query.sort)
       req.query.sort = "-datetime"
 
-    UserModel.find(req.query.active ? { active: req.query.active } : {})
+    query = req.query.search ? {
+      $or: [
+        { name: { $regex: req.query.search, $options: "i" } },
+        { email: { $regex: req.query.search, $options: "i" } },
+        { phone: { $regex: req.query.search, $options: "i" } }
+      ]
+    } : {}
+    if (req.query.active)
+      query.active = req.query.active
+
+
+    UserModel.find(query)
       .select("_id email name role phone datetime active remain")
       .sort(req.query.sort)
       .skip((req.query.page - 1) * req.query.limit)
@@ -118,7 +129,7 @@ module.exports = app => {
       .exec((err, users) => {
         if (err) return error(res, err)
         else {
-          UserModel.countDocuments(req.query.active ? { active: req.query.active } : {}, (err, totalPage) => {
+          UserModel.countDocuments(query, (err, totalPage) => {
             if (err) return error(res, err)
             totalPage = Math.ceil(totalPage / req.query.limit)
             previous = req.query.page > 1 ? req.protocol + "://" + req.get("host") + "/api/users?page=" + (Number(req.query.page) - 1) + "&limit=" + req.query.limit : null
