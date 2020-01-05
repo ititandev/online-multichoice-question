@@ -98,7 +98,7 @@ router.get("/exams", (req, res) => {
             .limit(parseInt(req.query.limit))
             .exec((err, exams) => {
                 if (err) return error(res, err)
-                ExamModel.countDocuments({}, (err, totalPage) => {
+                ExamModel.countDocuments(query, (err, totalPage) => {
                     if (err) return error(res, err)
                     totalPage = Math.ceil(totalPage / req.query.limit)
                     previous = req.query.page > 1 ? req.protocol + "://" + req.get("host") + "/api/exams?page=" + (Number(req.query.page) - 1) + "&limit=" + req.query.limit : null
@@ -393,7 +393,7 @@ router.get("/exams/contents/:id", (req, res) => {
         .limit(parseInt(req.query.limit))
         .exec((err, exams) => {
             if (err) return error(res, err)
-            ExamModel.countDocuments({ contentId: req.params.id }, (err, totalPage) => {
+            ExamModel.countDocuments(query, (err, totalPage) => {
                 if (err) return error(res, err)
                 totalPage = Math.ceil(totalPage / req.query.limit)
                 previous = req.query.page > 1 ? req.protocol + "://" + req.get("host") + "/api/exams/contents/" + req.params.id + "?page=" + (Number(req.query.page) - 1) + "&limit=" + req.query.limit : null

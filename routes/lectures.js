@@ -37,7 +37,7 @@ router.get("/lectures", (req, res) => {
         .limit(parseInt(req.query.limit))
         .exec((err, lectures) => {
             if (err) return error(res, err)
-            LectureModel.countDocuments({}, (err, totalPage) => {
+            LectureModel.countDocuments(query, (err, totalPage) => {
                 if (err) return error(res, err)
                 totalPage = Math.ceil(totalPage / req.query.limit)
                 previous = req.query.page > 1 ? req.protocol + "://" + req.get("host") + "/api/lectures?page=" + (Number(req.query.page) - 1) + "&limit=" + req.query.limit : null
@@ -120,7 +120,7 @@ router.get("/lectures/contents/:id", (req, res) => {
         .limit(parseInt(req.query.limit))
         .exec((err, lectures) => {
             if (err) return error(res, err)
-            LectureModel.countDocuments({ contentId: req.params.id }, (err, totalPage) => {
+            LectureModel.countDocuments(query, (err, totalPage) => {
                 if (err) return error(res, err)
                 totalPage = Math.ceil(totalPage / req.query.limit)
                 previous = req.query.page > 1 ? req.protocol + "://" + req.get("host") + "/api/lectures/contents/" + req.params.id + "?page=" + (Number(req.query.page) - 1) + "&limit=" + req.query.limit : null
