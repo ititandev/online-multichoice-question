@@ -507,7 +507,8 @@ router.post("/exams", (req, res) => {
             req.body.answer = req.body.answer.toUpperCase().replace(/[^ABCD]/g, '')
             req.body.total = req.body.answer.length
             req.body.time = req.body.time * 60
-            req.body.userId = req.authz.uid
+            if (req.authz.role != "admin" || !req.body.userId)
+                req.body.userId = req.authz.uid
             ExamModel.create(req.body, (err, exam) => {
                 if (err) return error(res, err)
                 return success(res, exam)
