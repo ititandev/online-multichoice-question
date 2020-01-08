@@ -166,7 +166,8 @@ router.post("/lectures", (req, res) => {
             if (err) return error(res, err)
             if (lectures.length > 0)
                 return fail(res, "Bài giảng đã tồn tại")
-            req.body.userId = req.authz.uid
+            if (req.authz.role != "admin" || !req.body.userId)
+                req.body.userId = req.authz.uid
             LectureModel.create(req.body, (err, lecture) => {
                 if (err) return error(res, err)
                 return success(res, lecture)
