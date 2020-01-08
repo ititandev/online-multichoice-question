@@ -87,7 +87,7 @@ router.get("/exams", (req, res) => {
         } : {}
 
         ExamModel.find(query)
-            .select("name datetime lessonId password")
+            .select("name datetime lessonId password userId")
             .populate({
                 path: 'lessonId',
                 select: 'name contentId',
@@ -103,6 +103,10 @@ router.get("/exams", (req, res) => {
                         }
                     }
                 }
+            })
+            .populate({
+                path: 'userId',
+                select: 'name email'
             })
             .sort(req.query.sort)
             .skip((req.query.page - 1) * req.query.limit)
@@ -394,7 +398,7 @@ router.get("/exams/lessons/:id", (req, res) => {
     } : { lessonId: req.params.id }
 
     ExamModel.find(query)
-        .select("name datetime lessonId password total time")
+        .select("name datetime lessonId password userId")
         .populate({
             path: 'lessonId',
             select: 'name contentId',
@@ -410,6 +414,10 @@ router.get("/exams/lessons/:id", (req, res) => {
                     }
                 }
             }
+        })
+        .populate({
+            path: 'userId',
+            select: 'name email'
         })
         .sort('-datetime')
         .skip((req.query.page - 1) * req.query.limit)
@@ -432,8 +440,6 @@ router.get("/exams/lessons/:id", (req, res) => {
                             contentName: element.lessonId.contentId.name,
                             subjectName: element.lessonId.contentId.subjectId.name,
                             className: element.lessonId.contentId.subjectId.classId.name,
-                            total: element.total,
-                            time: element.time,
                             datetime: element.datetime,
                             password: (element.password) ? true : false
                         }
