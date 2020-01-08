@@ -3,6 +3,7 @@ var router = express.Router();
 const ClassModel = require("../schema/ClassModel");
 const SubjectModel = require("../schema/SubjectModel");
 const ContentModel = require("../schema/ContentModel");
+const LessonModel = require("../schema/LessonModel");
 const ExamModel = require("../schema/ExamModel");
 const LectureModel = require("../schema/LectureModel");
 const { success, error, fail } = require("../common");
