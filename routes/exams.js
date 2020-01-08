@@ -255,6 +255,8 @@ router.get("/exams/:id", (req, res) => {
         return fail(res, "Chỉ admin có thể thực hiện")
     ExamModel.findById(req.params.id, (err, exam) => {
         if (err) return error(res, err)
+        if (!exam)
+            return fail(res, "Bài kiểm tra không tồn tại")
         exam.time = exam.time / 60
         return success(res, exam)
     })
