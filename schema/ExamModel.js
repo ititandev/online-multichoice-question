@@ -9,7 +9,6 @@ const ExamSchema = new Schema({
     total: { type: Number, required: true },
     password: { type: String, default: "" },
     note: { type: String, required: false },
-    contentId: { type: Schema.Types.ObjectId, ref: 'contents', required: true },
     lessonId: { type: Schema.Types.ObjectId, ref: 'lessons', required: true },
     datetime: { type: Date, default: Date.now },
     userId: { type: Schema.Types.ObjectId, ref: 'users', default: Date.now }
