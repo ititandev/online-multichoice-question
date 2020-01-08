@@ -219,7 +219,7 @@ router.get("/exams/export", (req, res) => {
                     headerStyle: { font: { bold: true } },
                     displayName: 'Thời gian',
                     cellFormat: function (value, row) {
-                        return row.time
+                        return row.time / 60
                     },
                     width: 120
                 },
