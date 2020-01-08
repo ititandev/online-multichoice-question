@@ -125,6 +125,124 @@ router.get("/exams", (req, res) => {
 
 })
 
+router.get("/exams/export", (req, res) => {
+    // if (req.authz.role != "admin")
+    //     return fail(res, "Không đủ quyền xuất báo cáo bài làm")
+
+    ExamModel.find()
+        .select("name contentId examUrl answer explainUrl time password note")
+        .populate({
+            path: 'contentId',
+            select: 'name subjectId',
+            populate: {
+                path: 'subjectId',
+                select: 'classId name',
+                populate: {
+                    path: 'classId',
+                    select: 'name'
+                }
+            }
+        })
+        .exec((err, exams) => {
+            if (err) return error(res, err)
+
+            const specification = {
+                className: {
+                    headerStyle: { font: { bold: true } },
+                    displayName: 'Lớp',
+                    cellFormat: function (value, element) {
+                        if (!element
+                            || !element.contentId
+                            || !element.contentId.subjectId
+                            || !element.contentId.subjectId.classId)
+                            return ""
+                        return element.contentId.subjectId.classId.name
+                    },
+                    width: 100
+                },
+                subjectName: {
+                    headerStyle: { font: { bold: true } },
+                    displayName: 'Môn học',
+                    cellFormat: function (value, element) {
+                        if (!element
+                            || !element.contentId
+                            || !element.contentId.subjectId)
+                            return ""
+                        return element.contentId.subjectId.name
+                    },
+                    width: 200
+                },
+                contentName: {
+                    headerStyle: { font: { bold: true } },
+                    displayName: 'Chương',
+                    cellFormat: function (value, element) {
+                        if (!element
+                            || !element.contentId)
+                            return ""
+                        return element.contentId.name
+                    },
+                    width: 200
+                },
+                name: {
+                    headerStyle: { font: { bold: true } },
+                    displayName: 'Đề',
+                    cellFormat: function (value, row) {
+                        return row.name
+                    },
+                    width: 200
+                },
+                examUrl: {
+                    headerStyle: { font: { bold: true } },
+                    displayName: 'Link Đề',
+                    cellFormat: function (value, row) {
+                        return row.examUrl
+                    },
+                    width: 200
+                },
+                explainUrl: {
+                    headerStyle: { font: { bold: true } },
+                    displayName: 'Link giải thích',
+                    cellFormat: function (value, row) {
+                        return row.explainUrl
+                    },
+                    width: 200
+                },
+                time: {
+                    headerStyle: { font: { bold: true } },
+                    displayName: 'Thời gian',
+                    cellFormat: function (value, row) {
+                        return row.time
+                    },
+                    width: 120
+                },
+                password: {
+                    headerStyle: { font: { bold: true } },
+                    displayName: 'Mật khẩu',
+                    cellFormat: function (value, row) {
+                        return row.password
+                    },
+                    width: 100
+                },
+                note: {
+                    headerStyle: { font: { bold: true } },
+                    displayName: 'Ghi chú',
+                    cellFormat: function (value, row) {
+                        return row.note
+                    },
+                    width: 100
+                }
+            }
+
+            const report = excel.buildExport([{
+                specification: specification,
+                data: exams
+            }]);
+
+            res.attachment("exams.xlsx");
+            return res.send(report);
+        })
+})
+
 router.get("/exams/users/:id/export", (req, res) => {
     if (req.authz.role != "admin")
         return fail(res, "Không đủ quyền xuất báo cáo bài làm")
