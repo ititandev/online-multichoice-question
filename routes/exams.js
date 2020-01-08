@@ -238,6 +238,14 @@ router.get("/exams/export", (req, res) => {
                         return row.note
                     },
                     width: 100
+                },
+                userId: {
+                    headerStyle: { font: { bold: true } },
+                    displayName: 'userId',
+                    cellFormat: function (value, row) {
+                        return row.userId
+                    },
+                    width: 100
                 }
             }
 
