@@ -10,6 +10,15 @@ var ObjectId = require('mongoose').Types.ObjectId;
 const excel = require('node-excel-export');
 
 
+router.delete("/exams", (req, res) => {
+    if (req.authz.role != "admin")
+        return fail(res, "Chỉ admin có thể liệt kê tất cả các bài kiểm tra")
+    ExamModel.deleteMany({}, err => {
+        if (err)
+            return error(res, err)
+        return success(res, "Xóa tất cả bài kiểm tra thành công")
+    })
+})
 
 router.get("/exams", (req, res) => {
     if (req.query.status == "done") {

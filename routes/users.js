@@ -277,7 +277,7 @@ module.exports = app => {
       return fail(res, "Chỉ admin có thể modify other user")
     UserModel.updateMany({ active: false }, { active: true, remain: 18000 }, (err, r) => {
       if (err) return error(res, err)
-      return success(res, "Kích hoạt thành công " + r.nModified + " tài khoản")
+      return success(res, null, "Kích hoạt thành công " + r.nModified + " tài khoản")
     })
   })
 
@@ -288,7 +288,7 @@ module.exports = app => {
       if (err) return err(res, err)
       AnswerModel.deleteMany({ userId: ObjectId(req.params.id) }, err => {
         if (err) return error(res, err)
-        return success(res, "Xóa tài khoản thành công")
+        return success(res, null, "Xóa tài khoản thành công")
       })
     })
   })
