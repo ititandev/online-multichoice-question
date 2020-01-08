@@ -80,6 +80,7 @@ app.delete("/api/all", (req, res) => {
     mongoose.connection.db.dropCollection("contents")
     mongoose.connection.db.dropCollection("subjects")
     mongoose.connection.db.dropCollection("classes")
+    res.json({})
 })
 
 app.use("/api/", usersRouter(app));
