@@ -130,7 +130,7 @@ router.get("/exams/export", (req, res) => {
     //     return fail(res, "Không đủ quyền xuất báo cáo bài làm")
 
     ExamModel.find()
-        .select("name contentId examUrl answer explainUrl time password note")
+        .select("name contentId examUrl answer explainUrl time password note userId")
         .populate({
             path: 'contentId',
             select: 'name subjectId',
