@@ -8,7 +8,7 @@ function success(res, data, message) {
     }
     if (message)
         response.message = message;
-    return res.json(response)
+    return res.status(200).json(response)
 }
 
 
@@ -17,17 +17,17 @@ function error(res, error, message) {
         message = "Đã có lỗi xảy ra"
     if (error)
         console.log(error);
-    else 
+    else
         console.log(message);
 
-    return res.json({
+    return res.status(400).json({
         success: false,
         message: message
     })
 }
 
 function fail(res, message) {
-    return res.json({
+    return res.status(400).json({
         success: false,
         message: message
     })
