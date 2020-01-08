@@ -161,7 +161,7 @@ router.post("/lectures", (req, res) => {
     LessonModel.find({ _id: req.body.lessonId }, (err, contents) => {
         if (err) return error(res, err)
         if (contents.length < 1)
-            return fail(res, "Chương không tồn tài")
+            return fail(res, "Bài học không tồn tài")
         LectureModel.find({ name: req.body.name, lessonId: req.body.lessonId }, (err, lectures) => {
             if (err) return error(res, err)
             if (lectures.length > 0)

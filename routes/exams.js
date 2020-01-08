@@ -419,8 +419,8 @@ router.get("/exams/lessons/:id", (req, res) => {
             ExamModel.countDocuments(query, (err, totalPage) => {
                 if (err) return error(res, err)
                 totalPage = Math.ceil(totalPage / req.query.limit)
-                previous = req.query.page > 1 ? req.protocol + "://" + req.get("host") + "/api/exams/contents/" + req.params.id + "?page=" + (Number(req.query.page) - 1) + "&limit=" + req.query.limit : null
-                next = req.query.page < totalPage ? req.protocol + "://" + req.get("host") + "/api/exams/contents/" + req.params.id + "?page=" + (Number(req.query.page) + 1) + "&limit=" + req.query.limit : null
+                previous = req.query.page > 1 ? req.protocol + "://" + req.get("host") + "/api/exams/lessons/" + req.params.id + "?page=" + (Number(req.query.page) - 1) + "&limit=" + req.query.limit : null
+                next = req.query.page < totalPage ? req.protocol + "://" + req.get("host") + "/api/exams/lessons/" + req.params.id + "?page=" + (Number(req.query.page) + 1) + "&limit=" + req.query.limit : null
                 exams = exams.map(element => {
                     if (!element || !element.lessonId || !element.lessonId.contentId || !element.lessonId.contentId.subjectId || !element.lessonId.contentId.subjectId.classId)
                         return {}
