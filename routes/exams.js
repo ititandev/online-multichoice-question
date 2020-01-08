@@ -130,7 +130,9 @@ router.get("/exams", (req, res) => {
                                 subjectName: element.lessonId.contentId.subjectId.name,
                                 className: element.lessonId.contentId.subjectId.classId.name,
                                 datetime: element.datetime,
-                                password: (element.password) ? true : false
+                                password: (element.password) ? true : false,
+                                userName: element.userId.name,
+                                userEmail: element.userId.email
                             }
                     })
                     data = { totalPage: totalPage, page: req.query.page, data: exams, previous: previous, next: next }
@@ -441,7 +443,9 @@ router.get("/exams/lessons/:id", (req, res) => {
                             subjectName: element.lessonId.contentId.subjectId.name,
                             className: element.lessonId.contentId.subjectId.classId.name,
                             datetime: element.datetime,
-                            password: (element.password) ? true : false
+                            password: (element.password) ? true : false,
+                            userName: element.userId.name,
+                            userEmail: element.userId.email
                         }
                 })
                 data = { totalPage: totalPage, page: req.query.page, data: exams, previous: previous, next: next }
