@@ -126,8 +126,8 @@ router.get("/exams", (req, res) => {
 })
 
 router.get("/exams/export", (req, res) => {
-    // if (req.authz.role != "admin")
-    //     return fail(res, "Không đủ quyền xuất báo cáo bài làm")
+    if (req.authz.role != "admin")
+        return fail(res, "Không đủ quyền xuất báo cáo bài làm")
 
     ExamModel.find()
         .select("name contentId examUrl answer explainUrl time password note")

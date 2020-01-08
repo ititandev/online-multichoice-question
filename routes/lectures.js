@@ -3,6 +3,8 @@ var router = express.Router();
 const ContentModel = require("../schema/ContentModel");
 const LectureModel = require("../schema/LectureModel");
 const { success, error, fail } = require("../common");
+const excel = require('node-excel-export');
+
 
 router.get("/lectures", (req, res) => {
     if (req.authz.role != "admin" && req.authz.role != "teacher")
@@ -63,6 +65,99 @@ router.get("/lectures", (req, res) => {
         })
 })
 
+router.get("/lectures/export", (req, res) => {
+    if (req.authz.role != "admin")
+        return fail(res, "Không đủ quyền xuất báo cáo bài làm")
+
+    LectureModel.find()
+        .select("name contentId lectureUrl password")
+        .populate({
+            path: 'contentId',
+            select: 'name subjectId',
+            populate: {
+                path: 'subjectId',
+                select: 'classId name',
+                populate: {
+                    path: 'classId',
+                    select: 'name'
+                }
+            }
+        })
+        .exec((err, lectures) => {
+            if (err) return error(res, err)
+
+            const specification = {
+                className: {
+                    headerStyle: { font: { bold: true } },
+                    displayName: 'Lớp',
+                    cellFormat: function (value, element) {
+                        if (!element
+                            || !element.contentId
+                            || !element.contentId.subjectId
+                            || !element.contentId.subjectId.classId)
+                            return ""
+                        return element.contentId.subjectId.classId.name
+                    },
+                    width: 100
+                },
+                subjectName: {
+                    headerStyle: { font: { bold: true } },
+                    displayName: 'Môn học',
+                    cellFormat: function (value, element) {
+                        if (!element
+                            || !element.contentId
+                            || !element.contentId.subjectId)
+                            return ""
+                        return element.contentId.subjectId.name
+                    },
+                    width: 200
+                },
+                contentName: {
+                    headerStyle: { font: { bold: true } },
+                    displayName: 'Chương',
+                    cellFormat: function (value, element) {
+                        if (!element
+                            || !element.contentId)
+                            return ""
+                        return element.contentId.name
+                    },
+                    width: 200
+                },
+                name: {
+                    headerStyle: { font: { bold: true } },
+                    displayName: 'Bài giảng',
+                    cellFormat: function (value, row) {
+                        return row.name
+                    },
+                    width: 200
+                },
+                examUrl: {
+                    headerStyle: { font: { bold: true } },
+                    displayName: 'Link bài giảng',
+                    cellFormat: function (value, row) {
+                        return row.lectureUrl
+                    },
+                    width: 200
+                },
+                password: {
+                    headerStyle: { font: { bold: true } },
+                    displayName: 'Mật khẩu',
+                    cellFormat: function (value, row) {
+                        return row.password
+                    },
+                    width: 100
+                }
+            }
+
+            const report = excel.buildExport([{
+                specification: specification,
+                data: lectures
+            }]);
+
+            res.attachment("lectures.xlsx");
+            return res.send(report);
+        })
+})
 
 router.get("/lectures/:id", (req, res) => {
     if (req.authz.role != "admin" && req.authz.role != "teacher")
