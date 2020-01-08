@@ -1,25 +1,17 @@
 var express = require("express");
 var router = express.Router();
-const ContentModel = require("../schema/ContentModel");
 const ExamModel = require("../schema/ExamModel");
 const LectureModel = require("../schema/LectureModel")
 const AnswerModel = require("../schema/AnswerModel");
 const UserModel = require("../schema/UserModel");
+
+const ContentModel = require("../schema/ContentModel");
+const LessonModel = require("../schema/LessonModel");
+
 const { success, error, fail } = require("../common");
 var ObjectId = require('mongoose').Types.ObjectId;
 const excel = require('node-excel-export');
 
-
-router.delete("/exams", (req, res) => {
-    if (req.authz.role != "admin")
-        return fail(res, "Chỉ admin có thể liệt kê tất cả các bài kiểm tra")
-    AnswerModel.deleteMany
-    ExamModel.deleteMany({}, err => {
-        if (err)
-            return error(res, err)
-        return success(res, "Xóa tất cả bài kiểm tra thành công")
-    })
-})
 
 router.get("/exams", (req, res) => {
     if (req.query.status == "done") {
