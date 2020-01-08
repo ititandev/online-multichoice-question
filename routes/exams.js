@@ -82,16 +82,20 @@ router.get("/exams", (req, res) => {
         } : {}
 
         ExamModel.find(query)
-            .select("name datetime contentId password")
+            .select("name datetime lessonId password")
             .populate({
-                path: 'contentId',
-                select: 'name subjectId',
+                path: 'lessonId',
+                select: 'name contentId',
                 populate: {
-                    path: 'subjectId',
-                    select: 'classId name',
+                    path: 'contentId',
+                    select: 'name subjectId',
                     populate: {
-                        path: 'classId',
-                        select: 'name'
+                        path: 'subjectId',
+                        select: 'classId name',
+                        populate: {
+                            path: 'classId',
+                            select: 'name'
+                        }
                     }
                 }
             })
@@ -480,7 +484,7 @@ router.post("/exams", (req, res) => {
             if (err) return error(res, err)
             if (exams.length > 0)
                 return fail(res, "Bài kiểm tra đã tồn tại")
-            if (!req.body.answer || !req.body.total || !req.body.time || !req.body.userId)
+            if (!req.body.answer || !req.body.time)
                 return fail(res, "Thiếu thông tin để tạo bài kiểm tra")
             req.body.answer = req.body.answer.toUpperCase().replace(/[^ABCD]/g, '')
             req.body.total = req.body.answer.length
