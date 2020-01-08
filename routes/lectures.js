@@ -66,11 +66,8 @@ router.get("/lectures", (req, res) => {
 })
 
 router.get("/lectures/export", (req, res) => {
-    if (req.authz.role != "admin")
-        return fail(res, "Không đủ quyền xuất báo cáo bài làm")
-
     LectureModel.find()
-        .select("name contentId lectureUrl password")
+        .select("name contentId lectureUrl password userId")
         .populate({
             path: 'contentId',
             select: 'name subjectId',
@@ -144,6 +141,14 @@ router.get("/lectures/export", (req, res) => {
                     displayName: 'Mật khẩu',
                     cellFormat: function (value, row) {
                         return row.password
+                    },
+                    width: 100
+                },
+                userId: {
+                    headerStyle: { font: { bold: true } },
+                    displayName: 'userId',
+                    cellFormat: function (value, row) {
+                        return row.userId
                     },
                     width: 100
                 }
