@@ -24,16 +24,20 @@ router.get("/exams", (req, res) => {
             .select("_id point start")
             .populate({
                 path: "examId",
-                select: "name contentId",
+                select: "name lessonId",
                 populate: {
-                    path: 'contentId',
-                    select: 'name subjectId',
+                    path: 'lessonId',
+                    select: 'name contentId',
                     populate: {
-                        path: 'subjectId',
-                        select: 'classId name',
+                        path: 'contentId',
+                        select: 'name subjectId',
                         populate: {
-                            path: 'classId',
-                            select: 'name'
+                            path: 'subjectId',
+                            select: 'classId name',
+                            populate: {
+                                path: 'classId',
+                                select: 'name'
+                            }
                         }
                     }
                 }
@@ -59,9 +63,10 @@ router.get("/exams", (req, res) => {
                 data.forEach(element => {
                     element._doc.examId = element.examId
                     element._doc.examName = element.examId ? element.examId.name : ""
-                    element._doc.contentName = element.examId.contentId ? element.examId.contentId.name : ""
-                    element._doc.subjectName = element.examId.contentId.subjectId ? element.examId.contentId.subjectId.name : ""
-                    element._doc.className = element.examId.contentId.subjectId.classId ? element.examId.contentId.subjectId.classId.name : ""
+                    element._doc.lessonName = element.examId.lessonId ? element.examId.lessonId.name : ""
+                    element._doc.contentName = element.examId.lessonId.contentId ? element.examId.contentId.name : ""
+                    element._doc.subjectName = element.examId.lessonId.contentId.subjectId ? element.examId.contentId.subjectId.name : ""
+                    element._doc.className = element.examId.lessonId.contentId.subjectId.classId ? element.examId.contentId.subjectId.classId.name : ""
                     element.examId = element.examId._id
                 })
                 return success(res, data)
@@ -110,15 +115,16 @@ router.get("/exams", (req, res) => {
                     previous = req.query.page > 1 ? req.protocol + "://" + req.get("host") + "/api/exams?page=" + (Number(req.query.page) - 1) + "&limit=" + req.query.limit : null
                     next = req.query.page < totalPage ? req.protocol + "://" + req.get("host") + "/api/exams?page=" + (Number(req.query.page) + 1) + "&limit=" + req.query.limit : null
                     exams = exams.map(element => {
-                        if (!element || !element.contentId || !element.contentId.subjectId || !element.contentId.subjectId.classId)
+                        if (!element || !element.lessonId || !element.lessonId.contentId || !element.lessonId.contentId.subjectId || !element.lessonId.contentId.subjectId.classId)
                             return {}
                         else
                             return {
                                 _id: element._id,
                                 name: element.name,
-                                contentName: element.contentId.name,
-                                subjectName: element.contentId.subjectId.name,
-                                className: element.contentId.subjectId.classId.name,
+                                lessonName: element.lessonId.name,
+                                contentName: element.lessonId.contentId.name,
+                                subjectName: element.lessonId.contentId.subjectId.name,
+                                className: element.lessonId.contentId.subjectId.classId.name,
                                 datetime: element.datetime,
                                 password: (element.password) ? true : false
                             }
@@ -142,16 +148,20 @@ router.get("/exams/users/:id/export", (req, res) => {
         .select("_id point start")
         .populate({
             path: "examId",
-            select: "name contentId",
+            select: "name lessonId",
             populate: {
-                path: 'contentId',
-                select: 'name subjectId',
+                path: 'lessonId',
+                select: 'name contentId',
                 populate: {
-                    path: 'subjectId',
-                    select: 'classId name',
+                    path: 'contentId',
+                    select: 'name subjectId',
                     populate: {
-                        path: 'classId',
-                        select: 'name'
+                        path: 'subjectId',
+                        select: 'classId name',
+                        populate: {
+                            path: 'classId',
+                            select: 'name'
+                        }
                     }
                 }
             }
@@ -170,9 +180,10 @@ router.get("/exams/users/:id/export", (req, res) => {
                     cellFormat: function (value, element) {
                         if (!element
                             || !element.examId
-                            || !element.examId.contentId
-                            || !element.examId.contentId.subjectId
-                            || !element.examId.contentId.subjectId.classId)
+                            || !element.examId.lessonId
+                            || !element.examId.lessonId.contentId
+                            || !element.examId.lessonId.contentId.subjectId
+                            || !element.examId.lessonId.contentId.subjectId.classId)
                             return ""
                         return element.examId.contentId.subjectId.classId.name
                     },
@@ -184,8 +195,9 @@ router.get("/exams/users/:id/export", (req, res) => {
                     cellFormat: function (value, element) {
                         if (!element
                             || !element.examId
-                            || !element.examId.contentId
-                            || !element.examId.contentId.subjectId)
+                            || !element.examId.lessonId
+                            || !element.examId.lessonId.contentId
+                            || !element.examId.lessonId.contentId.subjectId)
                             return ""
                         return element.examId.contentId.subjectId.name
                     },
@@ -197,7 +209,8 @@ router.get("/exams/users/:id/export", (req, res) => {
                     cellFormat: function (value, element) {
                         if (!element
                             || !element.examId
-                            || !element.examId.contentId)
+                            || !element.examId.lessonId
+                            || !element.examId.lessonId.contentId)
                             return ""
                         return element.examId.contentId.name
                     },
@@ -365,7 +378,7 @@ router.get("/exam/:id", (req, res) => {
     }
 })
 
-router.get("/exams/contents/:id", (req, res) => {
+router.get("/exams/lessons/:id", (req, res) => {
     if (req.authz.role != "admin" && req.authz.role != "teacher")
         return fail(res, "Chỉ admin có thể liệt kê tất cả các bài kiểm tra")
     if (!req.query.limit)
@@ -377,20 +390,24 @@ router.get("/exams/contents/:id", (req, res) => {
 
     query = req.query.search ? {
         name: { $regex: req.query.search, $options: "i" },
-        contentId: req.params.id
-    } : { contentId: req.params.id }
+        lessonId: req.params.id
+    } : { lessonId: req.params.id }
 
     ExamModel.find(query)
-        .select("name datetime contentId password total time")
+        .select("name datetime lessonId password total time")
         .populate({
-            path: 'contentId',
-            select: 'name subjectId',
+            path: 'lessonId',
+            select: 'name contentId',
             populate: {
-                path: 'subjectId',
-                select: 'classId name',
+                path: 'contentId',
+                select: 'name subjectId',
                 populate: {
-                    path: 'classId',
-                    select: 'name'
+                    path: 'subjectId',
+                    select: 'classId name',
+                    populate: {
+                        path: 'classId',
+                        select: 'name'
+                    }
                 }
             }
         })
@@ -405,15 +422,16 @@ router.get("/exams/contents/:id", (req, res) => {
                 previous = req.query.page > 1 ? req.protocol + "://" + req.get("host") + "/api/exams/contents/" + req.params.id + "?page=" + (Number(req.query.page) - 1) + "&limit=" + req.query.limit : null
                 next = req.query.page < totalPage ? req.protocol + "://" + req.get("host") + "/api/exams/contents/" + req.params.id + "?page=" + (Number(req.query.page) + 1) + "&limit=" + req.query.limit : null
                 exams = exams.map(element => {
-                    if (!element || !element.contentId || !element.contentId.subjectId || !element.contentId.subjectId.classId)
+                    if (!element || !element.lessonId || !element.lessonId.contentId || !element.lessonId.contentId.subjectId || !element.lessonId.contentId.subjectId.classId)
                         return {}
                     else
                         return {
                             _id: element._id,
                             name: element.name,
-                            contentName: element.contentId.name,
-                            subjectName: element.contentId.subjectId.name,
-                            className: element.contentId.subjectId.classId.name,
+                            lessonName: element.lessonId.name,
+                            contentName: element.lessonId.contentId.name,
+                            subjectName: element.lessonId.contentId.subjectId.name,
+                            className: element.lessonId.contentId.subjectId.classId.name,
                             total: element.total,
                             time: element.time,
                             datetime: element.datetime,
