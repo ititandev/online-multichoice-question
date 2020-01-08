@@ -69,15 +69,10 @@ module.exports = app => {
             );
             res.set("Authorization", token);
             delete user.password;
-            return res.json({
-              success: true,
-              data: { token: token, user: user }
-            });
-          } else
-            return res.json({
-              success: false,
-              message: "Sai mật khẩu"
-            });
+            return success(res, { token: token, user: user });
+          }
+          else
+            return fail(res, "Sai mật khẩu")
         });
       }
     );
