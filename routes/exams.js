@@ -13,6 +13,7 @@ const excel = require('node-excel-export');
 router.delete("/exams", (req, res) => {
     if (req.authz.role != "admin")
         return fail(res, "Chỉ admin có thể liệt kê tất cả các bài kiểm tra")
+    AnswerModel.deleteMany
     ExamModel.deleteMany({}, err => {
         if (err)
             return error(res, err)
@@ -479,11 +480,11 @@ router.get("/examslectures/contents/:id", (req, res) => {
 router.post("/exams", (req, res) => {
     if (req.authz.role != "admin" && req.authz.role != "teacher")
         return fail(res, "Chỉ admin có thể tạo bài kiểm tra")
-    ContentModel.find({ _id: req.body.contentId }, (err, contents) => {
+    LessonModel.find({ _id: req.body.lessonId }, (err, lessons) => {
         if (err) return error(res, err)
-        if (contents.length < 1)
-            return fail(res, "Chủ đề không tồn tài")
-        ExamModel.find({ name: req.body.name, contentId: req.body.contentId }, (err, exams) => {
+        if (lessons.length < 1)
+            return fail(res, "Bài học không tồn tài")
+        ExamModel.find({ name: req.body.name, lessonId: req.body.lessonId }, (err, exams) => {
             if (err) return error(res, err)
             if (exams.length > 0)
                 return fail(res, "Bài kiểm tra đã tồn tại")
