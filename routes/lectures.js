@@ -1,6 +1,6 @@
 var express = require("express");
 var router = express.Router();
-const ContentModel = require("../schema/ContentModel");
+const LessonModel = require("../schema/ContentModel");
 const LectureModel = require("../schema/LectureModel");
 const { success, error, fail } = require("../common");
 
@@ -21,14 +21,18 @@ router.get("/lectures", (req, res) => {
 
     LectureModel.find(query)
         .populate({
-            path: 'contentId',
-            select: 'name subjectId',
+            path: 'lessonId',
+            select: 'name contentId',
             populate: {
-                path: 'subjectId',
-                select: 'classId name',
+                path: 'contentId',
+                select: 'name subjectId',
                 populate: {
-                    path: 'classId',
-                    select: 'name'
+                    path: 'subjectId',
+                    select: 'classId name',
+                    populate: {
+                        path: 'classId',
+                        select: 'name'
+                    }
                 }
             }
         })
@@ -43,16 +47,17 @@ router.get("/lectures", (req, res) => {
                 previous = req.query.page > 1 ? req.protocol + "://" + req.get("host") + "/api/lectures?page=" + (Number(req.query.page) - 1) + "&limit=" + req.query.limit : null
                 next = req.query.page < totalPage ? req.protocol + "://" + req.get("host") + "/api/lectures?page=" + (Number(req.query.page) + 1) + "&limit=" + req.query.limit : null
                 lectures = lectures.map(element => {
-                    if (!element || !element.contentId || !element.contentId.subjectId || !element.contentId.subjectId.classId)
+                    if (!element || !element.lessonId || !element.lessonId.contentId || !element.lessonId.contentId.subjectId || !element.lessonId.contentId.subjectId.classId)
                         return {}
                     else
                         return {
                             _id: element._id,
                             name: element.name,
                             lectureUrl: element.lectureUrl,
-                            contentName: element.contentId.name,
-                            subjectName: element.contentId.subjectId.name,
-                            className: element.contentId.subjectId.classId.name,
+                            lessonId: element.lessonId.name,
+                            contentName: element.lessonId.contentId.name,
+                            subjectName: element.lessonId.contentId.subjectId.name,
+                            className: element.lessonId.contentId.subjectId.classId.name,
                             datetime: element.datetime,
                             password: element.password ? element.password : null
                         }
@@ -87,7 +92,7 @@ router.post("/lectures/:id", (req, res) => {
     })
 })
 
-router.get("/lectures/contents/:id", (req, res) => {
+router.get("/lectures/lessons/:id", (req, res) => {
     if (req.authz.role != "admin" && req.authz.role != "teacher") {
         return fail(res, "Chỉ admin và giáo viên có thể thực hiện")
     }
@@ -104,14 +109,18 @@ router.get("/lectures/contents/:id", (req, res) => {
 
     LectureModel.find(query)
         .populate({
-            path: 'contentId',
-            select: 'name subjectId',
+            path: 'lessonId',
+            select: 'name contentId',
             populate: {
-                path: 'subjectId',
-                select: 'classId name',
+                path: 'contentId',
+                select: 'name subjectId',
                 populate: {
-                    path: 'classId',
-                    select: 'name'
+                    path: 'subjectId',
+                    select: 'classId name',
+                    populate: {
+                        path: 'classId',
+                        select: 'name'
+                    }
                 }
             }
         })
@@ -123,19 +132,20 @@ router.get("/lectures/contents/:id", (req, res) => {
             LectureModel.countDocuments(query, (err, totalPage) => {
                 if (err) return error(res, err)
                 totalPage = Math.ceil(totalPage / req.query.limit)
-                previous = req.query.page > 1 ? req.protocol + "://" + req.get("host") + "/api/lectures/contents/" + req.params.id + "?page=" + (Number(req.query.page) - 1) + "&limit=" + req.query.limit : null
-                next = req.query.page < totalPage ? req.protocol + "://" + req.get("host") + "/api/lectures/contents/" + req.params.id + "?page=" + (Number(req.query.page) + 1) + "&limit=" + req.query.limit : null
+                previous = req.query.page > 1 ? req.protocol + "://" + req.get("host") + "/api/lectures/lessons/" + req.params.id + "?page=" + (Number(req.query.page) - 1) + "&limit=" + req.query.limit : null
+                next = req.query.page < totalPage ? req.protocol + "://" + req.get("host") + "/api/lectures/lessons/" + req.params.id + "?page=" + (Number(req.query.page) + 1) + "&limit=" + req.query.limit : null
                 lectures = lectures.map(element => {
-                    if (!element || !element.contentId || !element.contentId.subjectId || !element.contentId.subjectId.classId)
+                    if (!element || !element.lessonId || !element.lessonId.contentId || !element.lessonId.contentId.subjectId || !element.lessonId.contentId.subjectId.classId)
                         return {}
                     else
                         return {
                             _id: element._id,
                             name: element.name,
                             lectureUrl: element.lectureUrl,
-                            contentName: element.contentId.name,
-                            subjectName: element.contentId.subjectId.name,
-                            className: element.contentId.subjectId.classId.name,
+                            lessonName: element.lessonId.name,
+                            contentName: element.lessonId.contentId.name,
+                            subjectName: element.lessonId.contentId.subjectId.name,
+                            className: element.lessonId.contentId.subjectId.classId.name,
                             datetime: element.datetime
                         }
                 })
@@ -147,15 +157,15 @@ router.get("/lectures/contents/:id", (req, res) => {
 
 router.post("/lectures", (req, res) => {
     if (req.authz.role != "admin" && req.authz.role != "teacher")
-        return fail(res, "Chỉ admin có thể tạo bài giảng")
-    ContentModel.find({ _id: req.body.contentId }, (err, contents) => {
+        return fail(res, "Chỉ admin/teacher có thể tạo bài giảng")
+    LessonModel.find({ _id: req.body.lessonId }, (err, contents) => {
         if (err) return error(res, err)
         if (contents.length < 1)
-            return fail(res, "Chủ đề không tồn tài")
-        LectureModel.find({ name: req.body.name, contentId: req.body.contentId }, (err, lectures) => {
+            return fail(res, "Chương không tồn tài")
+        LectureModel.find({ name: req.body.name, lessonId: req.body.lessonId }, (err, lectures) => {
             if (err) return error(res, err)
             if (lectures.length > 0)
-                return fail(res, "bài giảng đã tồn tại")
+                return fail(res, "Bài giảng đã tồn tại")
             req.body.userId = req.authz.uid
             LectureModel.create(req.body, (err, lecture) => {
                 if (err) return error(res, err)
