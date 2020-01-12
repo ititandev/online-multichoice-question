@@ -456,49 +456,32 @@ router.get("/exams/lessons/:id", (req, res) => {
         })
 })
 
-router.get("/examslectures/contents/:id", (req, res) => {
-    ContentModel.findById(req.params.id)
-        .select("name subjectId")
-        .populate({
-            path: 'subjectId',
-            select: 'name',
-            populate: {
-                path: 'classId',
-                select: 'name'
-            }
-        })
-        .exec((err, content) => {
+router.get("/examslectures/lessons/:id", (req, res) => {
+    ExamModel.find({ lessonId: req.params.id })
+        .select("name datetime")
+        .exec((err, exams) => {
             if (err) return error(res, err)
-            if (!content)
-                return fail(res, "Chủ đề không tồn tại")
-            if (!content.subjectId || !content.subjectId.classId)
-                return fail(res, "Chủ đề không thuộc về một môn học hoặc một lớp học nào")
-
-            ExamModel.find({ contentId: req.params.id })
-                .select("name datetime")
-                .exec((err, exams) => {
+            if (!exams)
+                exams = []
+            exams.forEach(element => {
+                element._doc.type = "exam"
+            });
+            LectureModel.find({ lessonId: req.params.id })
+                .select("name datetime password")
+                .exec((err, lectures) => {
                     if (err) return error(res, err)
-                    exams.forEach(element => {
-                        element._doc.type = "exam"
+                    if (!lectures)
+                        lectures = []
+                    lectures.forEach(element => {
+                        element._doc.type = "lecture"
+                        element._doc.password = element._doc.password ? true : false
                     });
-                    LectureModel.find({ contentId: req.params.id })
-                        .select("name datetime password")
-                        .exec((err, lectures) => {
-                            if (err) return error(res, err)
-                            lectures.forEach(element => {
-                                element._doc.type = "lecture"
-                                element._doc.password = element._doc.password ? true : false
-                            });
-                            let data = {
-                                contentName: content.name,
-                                subjectName: content.subjectId.name,
-                                className: content.subjectId.classId.name,
-                                examslectures: exams.concat(lectures).sort((a, b) => {
-                                    return new Date(b.datetime) - new Date(a.datetime);
-                                })
-                            }
-                            return success(res, data)
+                    let data = {
+                        examslectures: exams.concat(lectures).sort((a, b) => {
+                            return new Date(b.datetime) - new Date(a.datetime);
                         })
+                    }
+                    return success(res, data)
                 })
         })
 })
