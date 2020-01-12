@@ -144,10 +144,22 @@ router.delete("/subjects/:id", (req, res) => {
 
 router.get("/contents/:id", (req, res) => {
     ContentModel.find({ subjectId: req.params.id })
-        // .populate("subjectId")
-        .sort("name")
+        .sort("name subjectId")
+        .populate({
+            path: "subjectId",
+            select: "name classId",
+            populate: {
+                path: "classId",
+                select: "name"
+            }
+        })
         .exec((err, contents) => {
             if (err) return error(res, err);
+            contents.forEach(content => {
+                content._doc.subjectName = content.subjectId.name
+                content._doc.className = content.subjectId.classId.name
+                content._doc.subjectId = undefined
+            })
             return success(res, contents);
         });
 });
