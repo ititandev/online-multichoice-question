@@ -222,7 +222,7 @@ module.exports = app => {
     })
   })
 
-  router.post("/user/import", (req, res) => {
+  router.post("/users/import", (req, res) => {
     console.log(req.files.upload);
     readXlsxFile(req.files.upload.tempFilePath).then((rows) => {
       success(res, rows)
