@@ -130,7 +130,7 @@ router.get("/exams/export", (req, res) => {
     //     return fail(res, "Không đủ quyền xuất báo cáo bài làm")
 
     ExamModel.find()
-        .select("name contentId examUrl answer explainUrl time password note userId")
+        .select("name contentId examUrl answer explainUrl time password note userId datetime")
         .populate({
             path: 'contentId',
             select: 'name subjectId',
@@ -245,7 +245,23 @@ router.get("/exams/export", (req, res) => {
                     cellFormat: function (value, row) {
                         return row.userId
                     },
-                    width: 100
+                    width: 300
+                },
+                _id: {
+                    headerStyle: { font: { bold: true } },
+                    displayName: '_id',
+                    cellFormat: function (value, row) {
+                        return row._id
+                    },
+                    width: 300
+                },
+                datetime: {
+                    headerStyle: { font: { bold: true } },
+                    displayName: 'datetime',
+                    cellFormat: function (value, row) {
+                        return row.datetime
+                    },
+                    width: 300
                 }
             }
 
