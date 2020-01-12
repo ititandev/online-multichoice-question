@@ -36,6 +36,10 @@ router.get("/lectures", (req, res) => {
                 }
             }
         })
+        .populate({
+            path: 'userId',
+            select: 'name email'
+        })
         .sort(req.query.sort)
         .skip((req.query.page - 1) * req.query.limit)
         .limit(parseInt(req.query.limit))
@@ -59,7 +63,9 @@ router.get("/lectures", (req, res) => {
                             subjectName: element.lessonId.contentId.subjectId.name,
                             className: element.lessonId.contentId.subjectId.classId.name,
                             datetime: element.datetime,
-                            password: element.password ? element.password : null
+                            password: element.password ? element.password : null,
+                            userName: element.userId ? element.userId.name : "",
+                            userEmail: element.userId ? element.userId.email : ""
                         }
                 })
                 data = { totalPage: totalPage, page: req.query.page, data: lectures, previous: previous, next: next }
