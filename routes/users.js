@@ -9,7 +9,7 @@ const AnswerModel = require("../schema/AnswerModel");
 var ObjectId = require('mongoose').Types.ObjectId;
 const saltRounds = 10;
 const excel = require('node-excel-export');
-
+const readXlsxFile = require('read-excel-file/node');
 
 module.exports = app => {
 
@@ -219,6 +219,13 @@ module.exports = app => {
           return success(res, null, "Tạo tài khoản thành công")
         });
       });
+    })
+  })
+
+  router.post("/user/import", (req, res) => {
+    console.log(req.files.upload);
+    readXlsxFile(req.files.upload.tempFilePath).then((rows) => {
+      success(res, rows)
     })
   })
 

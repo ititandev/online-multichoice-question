@@ -2,6 +2,8 @@
 .vscode/
 package-lock.json
 
+upload
+
 logs
 *.log
 npm-debug.log*

@@ -11,7 +11,7 @@ const examRouter = require("./routes/exams")
 const lectureRouter = require("./routes/lectures")
 const imageRouter = require("./routes/images")
 const mailer = require('express-mailer');
-
+const fileUpload = require('express-fileupload')
 
 
 require('dotenv').config();
@@ -56,6 +56,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
+app.use(fileUpload({
+  useTempFiles : true,
+  tempFileDir : './upload/'
+}));
 
 
 app.use((req, res, next) => {
