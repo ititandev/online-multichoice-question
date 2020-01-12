@@ -1,6 +1,6 @@
 var express = require("express");
 var router = express.Router();
-const LessonModel = require("../schema/ContentModel");
+const LessonModel = require("../schema/LessonModel");
 const LectureModel = require("../schema/LectureModel");
 const { success, error, fail } = require("../common");
 
@@ -54,7 +54,7 @@ router.get("/lectures", (req, res) => {
                             _id: element._id,
                             name: element.name,
                             lectureUrl: element.lectureUrl,
-                            lessonId: element.lessonId.name,
+                            lessonName: element.lessonId.name,
                             contentName: element.lessonId.contentId.name,
                             subjectName: element.lessonId.contentId.subjectId.name,
                             className: element.lessonId.contentId.subjectId.classId.name,
@@ -158,9 +158,9 @@ router.get("/lectures/lessons/:id", (req, res) => {
 router.post("/lectures", (req, res) => {
     if (req.authz.role != "admin" && req.authz.role != "teacher")
         return fail(res, "Chỉ admin/teacher có thể tạo bài giảng")
-    LessonModel.find({ _id: req.body.lessonId }, (err, contents) => {
+    LessonModel.findById(req.body.lessonId, (err, lesson) => {
         if (err) return error(res, err)
-        if (contents.length < 1)
+        if (!lesson)
             return fail(res, "Bài học không tồn tài")
         LectureModel.find({ name: req.body.name, lessonId: req.body.lessonId }, (err, lectures) => {
             if (err) return error(res, err)
