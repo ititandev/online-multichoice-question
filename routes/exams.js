@@ -191,7 +191,7 @@ router.get("/exams/users/:id/export", (req, res) => {
                             || !element.examId.lessonId.contentId.subjectId
                             || !element.examId.lessonId.contentId.subjectId.classId)
                             return ""
-                        return element.examId.contentId.subjectId.classId.name
+                        return element.examId.lessonId.contentId.subjectId.classId.name
                     },
                     width: 100
                 },
@@ -205,20 +205,32 @@ router.get("/exams/users/:id/export", (req, res) => {
                             || !element.examId.lessonId.contentId
                             || !element.examId.lessonId.contentId.subjectId)
                             return ""
-                        return element.examId.contentId.subjectId.name
+                        return element.examId.lessonId.contentId.subjectId.name
                     },
                     width: 200
                 },
                 contentName: {
                     headerStyle: { font: { bold: true } },
-                    displayName: 'Chủ đề',
+                    displayName: 'Chương',
                     cellFormat: function (value, element) {
                         if (!element
                             || !element.examId
                             || !element.examId.lessonId
                             || !element.examId.lessonId.contentId)
                             return ""
-                        return element.examId.contentId.name
+                        return element.examId.lessonId.contentId.name
+                    },
+                    width: 200
+                },
+                contentName: {
+                    headerStyle: { font: { bold: true } },
+                    displayName: 'Bài',
+                    cellFormat: function (value, element) {
+                        if (!element
+                            || !element.examId
+                            || !element.examId.lessonId)
+                            return ""
+                        return element.examId.lessonId.name
                     },
                     width: 200
                 },

@@ -77,7 +77,6 @@ app.use((req, res, next) => {
 })
 
 app.delete("/api/all", (req, res) => {
-    mongoose.connection.db.dropCollection("answers")
     mongoose.connection.db.dropCollection("exams")
     mongoose.connection.db.dropCollection("lectures")
     mongoose.connection.db.dropCollection("lessons")
