@@ -178,6 +178,21 @@ module.exports = app => {
           },
           displayName: "Active",
           width: 50
+        },
+        remain: {
+          headerStyle: { font: { bold: true } },
+          displayName: "Số phút còn lại",
+          width: 100
+        },
+        password: {
+          headerStyle: { font: { bold: true } },
+          displayName: "Password cũ đã mã hóa",
+          width: 450
+        },
+        newpassword: {
+          headerStyle: { font: { bold: true } },
+          displayName: "Password mới không mã hóa",
+          width: 200
         }
       }
 
