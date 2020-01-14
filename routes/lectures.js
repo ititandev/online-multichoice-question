@@ -110,8 +110,8 @@ router.get("/lectures/lessons/:id", (req, res) => {
 
     query = req.query.search ? {
         name: { $regex: req.query.search, $options: "i" },
-        contentId: req.params.id
-    } : { contentId: req.params.id }
+        lessonId: req.params.id
+    } : { lessonId: req.params.id }
 
     LectureModel.find(query)
         .populate({
