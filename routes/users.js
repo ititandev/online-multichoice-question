@@ -148,9 +148,11 @@ module.exports = app => {
   router.get("/users/export", (req, res) => {
     if (req.authz.role != "admin")
       return fail(res, "Không đủ quyền để xuất báo cáo tài khoản")
-    UserModel.find((err, data) => {
+    UserModel.find((err, users) => {
       if (err) return error(res, err)
-      console.log(data)
+      if (!users)
+        return fail(res, "Không có dữ liệu")
+
       const specification = {
         email: {
           headerStyle: { font: { bold: true } },
@@ -160,59 +162,75 @@ module.exports = app => {
           },
           width: 200
         },
-        // name: {
-        //   headerStyle: { font: { bold: true } },
-        //   displayName: 'Name',
-        //   cellFormat: function (value, row) {
-        //     return row.name
-        //   },
-        //   width: 200
-        // },
-        // phone: {
-        //   headerStyle: { font: { bold: true } },
-        //   displayName: 'Phone',
-        //   cellFormat: function (value, row) {
-        //     return row.phone
-        //   },
-        //   width: 100
-        // },
-        // role: {
-        //   headerStyle: { font: { bold: true } },
-        //   displayName: "Role",
-        //   cellFormat: function (value, row) {
-        //     return row.role
-        //   },
-        //   width: 80
-        // },
-        // active: {
-        //   headerStyle: { font: { bold: true } },
-        //   cellFormat: function (value, row) {
-        //     return (value) ? 'Active' : 'Inactive';
-        //   },
-        //   displayName: "Active",
-        //   width: 50
-        // },
-        // remain: {
-        //   headerStyle: { font: { bold: true } },
-        //   displayName: "So phut con lai",
-        //   cellFormat: function (value, row) {
-        //     return row.remain
-        //   },
-        //   width: 100
-        // },
+        name: {
+          headerStyle: { font: { bold: true } },
+          displayName: 'Name',
+          cellFormat: function (value, row) {
+            return row.name
+          },
+          width: 200
+        },
+        phone: {
+          headerStyle: { font: { bold: true } },
+          displayName: 'Phone',
+          cellFormat: function (value, row) {
+            return row.phone
+          },
+          width: 100
+        },
+        role: {
+          headerStyle: { font: { bold: true } },
+          displayName: "Role",
+          cellFormat: function (value, row) {
+            return row.role
+          },
+          width: 80
+        },
+        active: {
+          headerStyle: { font: { bold: true } },
+          cellFormat: function (value, row) {
+            return (value) ? 'Active' : 'Inactive';
+          },
+          displayName: "Active",
+          width: 50
+        },
+        remain: {
+          headerStyle: { font: { bold: true } },
+          displayName: "Số phút còn lại",
+          cellFormat: function (value, row) {
+            return row.remain
+          },
+          width: 100
+        },
         // password: {
         //   headerStyle: { font: { bold: true } },
-        //   displayName: "Password cu da ma hoa",
+        //   displayName: "Password cũ đã mã hóa",
         //   cellFormat: function (value, row) {
         //     return row.password
         //   },
         //   width: 450
-        // }
+        // },
+        newpassword: {
+          headerStyle: { font: { bold: true } },
+          displayName: "Password mới (để trống nếu không đổi mật khẩu)",
+          cellFormat: function (value, row) {
+            return null
+          },
+          width: 350
+        },
+        // _id: {
+        //   headerStyle: { font: { bold: true } },
+        //   displayName: "userId (không được sửa)",
+        //   cellFormat: function (value, row) {
+        //     return row._id
+        //   },
+        //   width: 450
+        // },
       }
 
       const report = excel.buildExport([{
         specification: specification,
-        data: data
+        data: users
       }]);
 
       res.attachment('users.xlsx');
@@ -250,11 +268,78 @@ module.exports = app => {
     })
   })
 
-  router.post("/users/import", (req, res) => {
-    console.log(req.files.upload);
+  router.post("/users/import", async (req, res) => {
+    let response = { updated: 0, new: 0, total: 0 }
     readXlsxFile(req.files.upload.tempFilePath).then((rows) => {
-      success(res, rows)
+      rows.splice(0, 1)
+      promises = rows.map(row => {
+        response.total += 1
+        return new Promise((resolve, reject) => {
+          UserModel.find({ email: row[0] }, (err, user) => {
+            if (err) reject(err)
+            if (user.length > 0) {
+              let data = {
+                name: row[1],
+                phone: row[2],
+                role: row[3],
+                active: row[4] == "Active" || row[4] == "active" ? true : false,
+                remain: row[5]
+              }
+              if (row[6])
+                bcrypt.hash(row[6], saltRounds, (err, hash) => {
+                  if (err) reject(err)
+                  data.password = hash
+                  UserModel.updateOne({ email: row[0] }, data, err => {
+                    if (err) reject(err)
+                    response.updated += 1
+                    resolve()
+                  })
+                });
+              else
+                UserModel.updateOne({ email: row[0] }, data, err => {
+                  if (err) reject(err)
+                  response.updated += 1
+                  resolve()
+                })
+            }
+            else {
+              let newPassword = row[6] ? row[6] : Math.random()
+              bcrypt.hash(newPassword.toString(), saltRounds, (err, hash) => {
+                if (err) reject(err)
+                let user = new UserModel({
+                  email: row[0],
+                  name: row[1],
+                  phone: row[2],
+                  role: row[3] ? row[3] : "user",
+                  active: row[4] == "Active" || row[4] == "active" ? true : false,
+                  remain: row[5] ? row[5] : undefined,
+                  password: hash
+                });
+                user.save(err => {
+                  if (err) reject(err)
+                  response.new += 1
+                  resolve()
+                });
+              });
+
+            }
+          })
+        })
+      })
+
+      Promise.all(promises)
+        .then(() => {
+          console.log(response)
+          return success(res, response)
+        })
+        .catch(err => {
+          return fail(res, "Tải lên thất bại")
+        })
     })
+      .catch(err => {
+        console.error(err)
+        return fail(res, "File excel chưa thay đổi từ khi xuất")
+      })
   })
 
   router.put("/users", (req, res) => {
