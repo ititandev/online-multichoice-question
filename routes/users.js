@@ -150,54 +150,67 @@ module.exports = app => {
       return fail(res, "Không đủ quyền để xuất báo cáo tài khoản")
     UserModel.find((err, data) => {
       if (err) return error(res, err)
+      console.log(data)
       const specification = {
         email: {
           headerStyle: { font: { bold: true } },
           displayName: 'Email',
-          width: 200
-        },
-        name: {
-          headerStyle: { font: { bold: true } },
-          displayName: 'Name',
-          width: 200
-        },
-        phone: {
-          headerStyle: { font: { bold: true } },
-          displayName: 'Phone',
-          width: 100
-        },
-        role: {
-          headerStyle: { font: { bold: true } },
-          displayName: "Role",
-          width: 80
-        },
-        active: {
-          headerStyle: { font: { bold: true } },
           cellFormat: function (value, row) {
-            return (value) ? 'Active' : 'Inactive';
+            return row.email
           },
-          displayName: "Active",
-          width: 50
-        },
-        remain: {
-          headerStyle: { font: { bold: true } },
-          displayName: "Số phút còn lại",
-          width: 100
-        },
-        password: {
-          headerStyle: { font: { bold: true } },
-          displayName: "Password cũ đã mã hóa",
-          width: 450
-        },
-        newpassword: {
-          headerStyle: { font: { bold: true } },
-          displayName: "Password mới không mã hóa",
           width: 200
-        }
+        },
+        // name: {
+        //   headerStyle: { font: { bold: true } },
+        //   displayName: 'Name',
+        //   cellFormat: function (value, row) {
+        //     return row.name
+        //   },
+        //   width: 200
+        // },
+        // phone: {
+        //   headerStyle: { font: { bold: true } },
+        //   displayName: 'Phone',
+        //   cellFormat: function (value, row) {
+        //     return row.phone
+        //   },
+        //   width: 100
+        // },
+        // role: {
+        //   headerStyle: { font: { bold: true } },
+        //   displayName: "Role",
+        //   cellFormat: function (value, row) {
+        //     return row.role
+        //   },
+        //   width: 80
+        // },
+        // active: {
+        //   headerStyle: { font: { bold: true } },
+        //   cellFormat: function (value, row) {
+        //     return (value) ? 'Active' : 'Inactive';
+        //   },
+        //   displayName: "Active",
+        //   width: 50
+        // },
+        // remain: {
+        //   headerStyle: { font: { bold: true } },
+        //   displayName: "So phut con lai",
+        //   cellFormat: function (value, row) {
+        //     return row.remain
+        //   },
+        //   width: 100
+        // },
+        // password: {
+        //   headerStyle: { font: { bold: true } },
+        //   displayName: "Password cu da ma hoa",
+        //   cellFormat: function (value, row) {
+        //     return row.password
+        //   },
+        //   width: 450
+        // }
       }
 
       const report = excel.buildExport([{
-        heading: [],
         specification: specification,
         data: data
       }]);

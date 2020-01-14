@@ -64,9 +64,9 @@ router.get("/exams", (req, res) => {
                     element._doc.examId = element.examId
                     element._doc.examName = element.examId ? element.examId.name : ""
                     element._doc.lessonName = element.examId.lessonId ? element.examId.lessonId.name : ""
-                    element._doc.contentName = element.examId.lessonId.contentId ? element.examId.contentId.name : ""
-                    element._doc.subjectName = element.examId.lessonId.contentId.subjectId ? element.examId.contentId.subjectId.name : ""
-                    element._doc.className = element.examId.lessonId.contentId.subjectId.classId ? element.examId.contentId.subjectId.classId.name : ""
+                    element._doc.contentName = element.examId.lessonId.contentId ? element.examId.lessonId.contentId.name : ""
+                    element._doc.subjectName = element.examId.lessonId.contentId.subjectId ? element.examId.lessonId.contentId.subjectId.name : ""
+                    element._doc.className = element.examId.lessonId.contentId.subjectId.classId ? element.examId.lessonId.contentId.subjectId.classId.name : ""
                     element.examId = element.examId._id
                 })
                 return success(res, data)

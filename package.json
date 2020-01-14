@@ -28,7 +28,8 @@
     "multer-gridfs-storage": "^3.2.3",
     "node-excel-export": "^1.4.4",
     "nodemon": "^1.19.0",
-    "read-excel-file": "^4.0.5"
+    "read-excel-file": "^4.0.5",
+    "xlsx": "^0.15.4"
   },
   "nodemonConfig": {
     "restartable": "rs",
