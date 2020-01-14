@@ -134,7 +134,7 @@ router.delete("/subjects/:id", (req, res) => {
     ContentModel.countDocuments({ subjectId: req.params.id }, (err, count) => {
         if (err) return error(res, err);
         if (count > 0)
-            return fail(res, "Vui lòng xóa tất cả chủ đề của môn học trước");
+            return fail(res, "Vui lòng xóa tất cả chương của môn học trước");
         SubjectModel.deleteOne({ _id: req.params.id }, err => {
             if (err) return error(res, err);
             return success(res, null, "Xóa môn học thành công");
