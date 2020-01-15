@@ -222,7 +222,7 @@ router.get("/exams/users/:id/export", (req, res) => {
                     },
                     width: 200
                 },
-                contentName: {
+                lessonName: {
                     headerStyle: { font: { bold: true } },
                     displayName: 'Bài',
                     cellFormat: function (value, element) {
