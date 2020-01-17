@@ -143,6 +143,171 @@ router.get("/exams", (req, res) => {
 
 })
 
+
+router.get("/exams/export", (req, res) => {
+    if (req.authz.role != "admin")
+        return fail(res, "Không đủ quyền xuất báo cáo bài làm")
+
+    ExamModel.find()
+        .select("name lessonId examUrl answer explainUrl time password note userId datetime")
+        .populate({
+            path: 'lessonId',
+            select: "name contentId",
+            populate: {
+                path: 'contentId',
+                select: 'name subjectId',
+                populate: {
+                    path: 'subjectId',
+                    select: 'classId name',
+                    populate: {
+                        path: 'classId',
+                        select: 'name'
+                    }
+                }
+            }
+        })
+        .populate({
+            path: "userId",
+            select: "email name"
+        })
+        .exec((err, exams) => {
+            if (err) return error(res, err)
+
+            const specification = {
+                className: {
+                    headerStyle: { font: { bold: true } },
+                    displayName: 'Lớp',
+                    cellFormat: function (value, element) {
+                        if (!element
+                            || !element.lessonId
+                            || !element.lessonId.contentId
+                            || !element.lessonId.contentId.subjectId
+                            || !element.lessonId.contentId.subjectId.classId)
+                            return ""
+                        return element.lessonId.contentId.subjectId.classId.name
+                    },
+                    width: 100
+                },
+                subjectName: {
+                    headerStyle: { font: { bold: true } },
+                    displayName: 'Môn học',
+                    cellFormat: function (value, element) {
+                        if (!element
+                            || !element.lessonId
+                            || !element.lessonId.contentId
+                            || !element.lessonId.contentId.subjectId)
+                            return ""
+                        return element.lessonId.contentId.subjectId.name
+                    },
+                    width: 100
+                },
+                contentName: {
+                    headerStyle: { font: { bold: true } },
+                    displayName: 'Chương',
+                    cellFormat: function (value, element) {
+                        if (!element
+                            || !element.lessonId
+                            || !element.lessonId.contentId)
+                            return ""
+                        return element.lessonId.contentId.name
+                    },
+                    width: 300
+                },
+                lessonName: {
+                    headerStyle: { font: { bold: true } },
+                    displayName: 'Bài',
+                    cellFormat: function (value, element) {
+                        if (!element
+                            || !element.lessonId)
+                            return ""
+                        return element.lessonId.name
+                    },
+                    width: 100
+                },
+                name: {
+                    headerStyle: { font: { bold: true } },
+                    displayName: 'Đề',
+                    cellFormat: function (value, row) {
+                        return row.name
+                    },
+                    width: 200
+                },
+                examUrl: {
+                    headerStyle: { font: { bold: true } },
+                    displayName: 'Link Đề',
+                    cellFormat: function (value, row) {
+                        return row.examUrl
+                    },
+                    width: 200
+                },
+                answer: {
+                    headerStyle: { font: { bold: true } },
+                    displayName: 'Đáp án',
+                    cellFormat: function (value, row) {
+                        return row.answer
+                    },
+                    width: 200
+                },
+                explainUrl: {
+                    headerStyle: { font: { bold: true } },
+                    displayName: 'Link giải thích',
+                    cellFormat: function (value, row) {
+                        return row.explainUrl
+                    },
+                    width: 200
+                },
+                time: {
+                    headerStyle: { font: { bold: true } },
+                    displayName: 'Thời gian (phút)',
+                    cellFormat: function (value, row) {
+                        return row.time / 60
+                    },
+                    width: 120
+                },
+                password: {
+                    headerStyle: { font: { bold: true } },
+                    displayName: 'Mật khẩu',
+                    cellFormat: function (value, row) {
+                        return row.password
+                    },
+                    width: 100
+                },
+                userEmail: {
+                    headerStyle: { font: { bold: true } },
+                    displayName: 'Email người tạo',
+                    cellFormat: function (value, row) {
+                        return row.userId ? row.userId.email : ""
+                    },
+                    width: 200
+                },
+                userName: {
+                    headerStyle: { font: { bold: true } },
+                    displayName: 'Tên người tạo',
+                    cellFormat: function (value, row) {
+                        return row.userId ? row.userId.name : ""
+                    },
+                    width: 200
+                },
+                note: {
+                    headerStyle: { font: { bold: true } },
+                    displayName: 'Ghi chú',
+                    cellFormat: function (value, row) {
+                        return row.note
+                    },
+                    width: 400
+                },
+            }
+
+            const report = excel.buildExport([{
+                specification: specification,
+                data: exams
+            }]);
+
+            res.attachment("exams.xlsx");
+            return res.send(report);
+        })
+})
+
 router.get("/exams/users/:id/export", (req, res) => {
     if (req.authz.role != "admin")
         return fail(res, "Không đủ quyền xuất báo cáo bài làm")
