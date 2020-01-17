@@ -76,15 +76,15 @@ app.use((req, res, next) => {
     })
 })
 
-app.delete("/api/all", (req, res) => {
-    mongoose.connection.db.dropCollection("exams")
-    mongoose.connection.db.dropCollection("lectures")
-    mongoose.connection.db.dropCollection("lessons")
-    mongoose.connection.db.dropCollection("contents")
-    mongoose.connection.db.dropCollection("subjects")
-    mongoose.connection.db.dropCollection("classes")
-    res.json({})
-})
+// app.delete("/api/all", (req, res) => {
+//     mongoose.connection.db.dropCollection("exams")
+//     mongoose.connection.db.dropCollection("lectures")
+//     mongoose.connection.db.dropCollection("lessons")
+//     mongoose.connection.db.dropCollection("contents")
+//     mongoose.connection.db.dropCollection("subjects")
+//     mongoose.connection.db.dropCollection("classes")
+//     res.json({})
+// })
 
 app.use("/api/", usersRouter(app));
 app.use("/api/", classRouter);
