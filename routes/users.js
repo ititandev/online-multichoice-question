@@ -95,7 +95,7 @@ module.exports = app => {
   });
 
   router.get("/users", (req, res) => {
-    if (req.authz.role != "admin")
+    if (req.authz.role != "admin" && req.authz.role != "teacher")
       return fail(res, "Chỉ admin có thể thực hiện")
 
     if (!req.query.limit)
@@ -146,7 +146,7 @@ module.exports = app => {
   })
 
   router.get("/users/export", (req, res) => {
-    if (req.authz.role != "admin")
+    if (req.authz.role != "admin" && req.authz.role != "teacher")
       return fail(res, "Không đủ quyền để xuất báo cáo tài khoản")
     UserModel.find((err, users) => {
       if (err) return error(res, err)
