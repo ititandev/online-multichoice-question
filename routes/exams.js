@@ -342,7 +342,7 @@ router.get("/exams/users/:id/export", (req, res) => {
             if (err) return error(res, err)
 
             if (!answers || answers.length == 0)
-                return fail(res, "Đề thi chưa được làm lần nào")
+                return fail(res, "Tài khoản chưa làm đề thi nào")
 
             const specification = {
                 className: {
