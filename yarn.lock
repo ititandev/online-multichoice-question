@@ -2060,6 +2060,13 @@ node-pre-gyp@0.12.0, node-pre-gyp@^0.12.0:
     semver "^5.3.0"
     tar "^4"
 
+nodejs-nodemailer-outlook@^1.2.3:
+  version "1.2.3"
+  resolved "https://registry.yarnpkg.com/nodejs-nodemailer-outlook/-/nodejs-nodemailer-outlook-1.2.3.tgz#a95fa716fa9f5372938e0c2c88f6ddc7cd2663bb"
+  integrity sha512-qSRBM95Q/JI529z8by2nDSOUNU3B1UkqXjZq6PM6/6Le1/ghEeQK3Wx2Gm6/LHnSPPqtqE88EbTMWC/Mx+qmew==
+  dependencies:
+    nodemailer "^4.4.1"
+
 nodemailer@^0.7.1:
   version "0.7.1"
   resolved "https://registry.yarnpkg.com/nodemailer/-/nodemailer-0.7.1.tgz#1ec819e243622300a00abe746cb5d3389c0f316c"
@@ -2073,6 +2080,11 @@ nodemailer@^0.7.1:
     simplesmtp "~0.2 || ~0.3.30"
   optionalDependencies:
     readable-stream "~1.1.9"
+
+nodemailer@^4.4.1:
+  version "4.7.0"
+  resolved "https://registry.yarnpkg.com/nodemailer/-/nodemailer-4.7.0.tgz#4420e06abfffd77d0618f184ea49047db84f4ad8"
+  integrity sha512-IludxDypFpYw4xpzKdMAozBSkzKHmNBvGanUREjJItgJ2NYcK/s8+PggVhj7c2yGFQykKsnnmv1+Aqo0ZfjHmw==
 
 nodemon@^1.19.0:
   version "1.19.1"

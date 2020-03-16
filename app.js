@@ -4,30 +4,17 @@ var cookieParser = require("cookie-parser");
 var logger = require("morgan");
 const mongoose = require("mongoose");
 const { verifyJWTToken } = require("./auth.js");
-var usersRouter = require("./routes/users");
+var userRouter = require("./routes/users");
 const otherRouter = require("./routes/other")
 const classRouter = require("./routes/classes")
 const examRouter = require("./routes/exams")
 const lectureRouter = require("./routes/lectures")
 const imageRouter = require("./routes/images")
-const mailer = require('express-mailer');
 const fileUpload = require('express-fileupload')
 
 
 require('dotenv').config();
 var app = express();
-mailer.extend(app, {
-  from: 'no-reply@tracnghiem789.com',
-  host: 'smtp.gmail.com', // hostname
-  secureConnection: true, // use SSL
-  port: 465, // port for secure SMTP
-  transportMethod: 'SMTP', // default is SMTP. Accepts anything that nodemailer accepts
-  auth: {
-    user: process.env.MAIL_USER,
-    pass: process.env.MAIL_PASS
-  }
-});
-
 
 
 app.set("views", path.join(__dirname, "views"));
@@ -86,7 +73,7 @@ app.use((req, res, next) => {
 //     res.json({})
 // })
 
-app.use("/api/", usersRouter(app));
+app.use("/api/", userRouter);
 app.use("/api/", classRouter);
 app.use("/api/", examRouter);
 app.use("/api/", lectureRouter);
