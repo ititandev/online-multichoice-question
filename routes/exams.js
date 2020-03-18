@@ -997,6 +997,8 @@ router.put("/answers/:id", (req, res) => {
 
     AnswerModel.findById(req.params.id, (err, answer) => {
         if (err) return error(res, err)
+        if (!answer)
+            return fail(res, "Bài làm không tồn tại")
         if (answer.status === "done")
             return fail(res, "Không được phép cập nhật bài làm đã hoàn thành")
         if (req.body.status == "done") {
