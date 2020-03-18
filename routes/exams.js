@@ -61,6 +61,15 @@ router.get("/exams", (req, res) => {
                 })
 
                 data.forEach(element => {
+                    if (!element || !element.examId || !element.examId.lessonId || !element.examId.lessonId.contentId || !element.examId.lessonId.contentId.subjectId || !element.examId.lessonId.contentId.subjectId.classId) {
+                        element._doc.examId = " "
+                        element._doc.examName = " "
+                        element._doc.lessonName = " "
+                        element._doc.contentName = " "
+                        element._doc.subjectName = " "
+                        element._doc.className = " "
+                        element.examId = " "
+                    }
                     element._doc.examId = element.examId
                     element._doc.examName = element.examId ? element.examId.name : ""
                     element._doc.lessonName = element.examId.lessonId ? element.examId.lessonId.name : ""
