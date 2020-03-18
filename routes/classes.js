@@ -269,13 +269,13 @@ router.delete("/lessons/:id", (req, res) => {
         return fail(res, "Chỉ admin có thể xóa bài học");
 
     ExamModel.countDocuments(
-        { contentId: ObjectId(req.params.id) },
+        { lessonId: ObjectId(req.params.id) },
         (err, count) => {
             if (err) return error(res, err);
             if (count > 0)
                 return fail(res, "Vui lòng xóa tất cả các đề thi của bài học trước");
             LectureModel.countDocuments(
-                { contentId: ObjectId(req.params.id) },
+                { lessonId: ObjectId(req.params.id) },
                 (err, count) => {
                     if (err) return error(res, err);
                     if (count > 0)
