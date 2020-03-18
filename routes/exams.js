@@ -489,6 +489,7 @@ router.get("/exam/:id", (req, res) => {
                             .exec((err, answers) => {
                                 if (err) return error(res, err)
                                 exam._doc.answers = answers
+                                exam._doc.answer = undefined
                                 return success(res, exam)
                             })
                     })
