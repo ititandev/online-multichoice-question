@@ -120,7 +120,7 @@ router.get("/exams", (req, res) => {
                     next = req.query.page < totalPage ? req.protocol + "://" + req.get("host") + "/api/exams?page=" + (Number(req.query.page) + 1) + "&limit=" + req.query.limit : null
                     exams = exams.map(element => {
                         if (!element || !element.lessonId || !element.lessonId.contentId || !element.lessonId.contentId.subjectId || !element.lessonId.contentId.subjectId.classId)
-                            return {}
+                            return { _id: element._id }
                         else
                             return {
                                 _id: element._id,

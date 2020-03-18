@@ -4,7 +4,7 @@ var cookieParser = require("cookie-parser");
 var logger = require("morgan");
 const mongoose = require("mongoose");
 const { verifyJWTToken } = require("./auth.js");
-var userRouter = require("./routes/users");
+const userRouter = require("./routes/users");
 const otherRouter = require("./routes/other")
 const classRouter = require("./routes/classes")
 const examRouter = require("./routes/exams")
@@ -21,7 +21,7 @@ app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "jade");
 
 mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-  .catch(error => handleError(error));
+  .catch(error => console.error("Error when connect to MONGODB"));
 
 app.use(function (req, res, next) {
   res.setHeader("Access-Control-Allow-Origin", "*");
