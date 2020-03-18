@@ -664,7 +664,7 @@ router.get("/examslectures/lessons/:id", (req, res) => {
                     });
                     let data = {
                         examslectures: exams.concat(lectures).sort((a, b) => {
-                            return new Date(b.datetime) - new Date(a.datetime);
+                            return a.name.localeCompare(b.name)
                         })
                     }
                     return success(res, data)
