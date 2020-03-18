@@ -414,30 +414,31 @@ router.get('/forgot/:email', function (req, res, next) {
   UserModel.findOne({ email: req.params.email }, (err, user) => {
     if (!user)
       return fail(res, "Tài khoản không tồn tại")
-    newPassword = Math.floor(Math.random() * 1000000).toString()
-    bcrypt.hash(newPassword, saltRounds, (err, hash) => {
-      UserModel.updateOne({ email: req.params.email }, { password: hash }, err => {
-        return nodeoutlook.sendEmail({
-          auth: {
-            user: process.env.MAIL_USER,
-            pass: process.env.MAIL_PASS
-          },
-          from: process.env.MAIL_USER,
-          to: req.params.email,
-          subject: 'Reset password tracnghiem789.com',
-          html: '<head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Reset password</title><body><h3>Mật khẩu mới của bạn là: ' + newPassword + '</h3></body></head>',
-          text: newPassword,
-          replyTo: req.params.email,
-          onError: err => {
-            return error(res, err)
-          },
-          onSuccess: i => {
-            success(res, null, "Kiểm tra email để lấy mật khẩu mới");
-          }
-        }
-        );
-      })
-    })
+    return fail(res, "Tính năng tạm thời ngưng phục vụ, liên hệ admin để biết thêm thông tin chi tiết")
+    // newPassword = Math.floor(Math.random() * 1000000).toString()
+    // bcrypt.hash(newPassword, saltRounds, (err, hash) => {
+    //   UserModel.updateOne({ email: req.params.email }, { password: hash }, err => {
+    //     return nodeoutlook.sendEmail({
+    //       auth: {
+    //         user: process.env.MAIL_USER,
+    //         pass: process.env.MAIL_PASS
+    //       },
+    //       from: process.env.MAIL_USER,
+    //       to: req.params.email,
+    //       subject: 'Reset password tracnghiem789.com',
+    //       html: '<head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Reset password</title><body><h3>Mật khẩu mới của bạn là: ' + newPassword + '</h3></body></head>',
+    //       text: newPassword,
+    //       replyTo: req.params.email,
+    //       onError: err => {
+    //         return error(res, err)
+    //       },
+    //       onSuccess: i => {
+    //         success(res, null, "Kiểm tra email để lấy mật khẩu mới");
+    //       }
+    //     }
+    //     );
+    //   })
+    // })
 
   })
 });
