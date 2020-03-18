@@ -81,6 +81,79 @@ router.get("/exams", (req, res) => {
                 return success(res, data)
             })
     }
+    else if (req.query.status == "doing") {
+        // if (req.authz.role != "admin")
+        // return fail(res, "Chỉ admin có thể thống kê")
+        AnswerModel.find({
+            status: "doing"
+        }, (err, answers) => {
+            if (err) return error(res, err)
+
+            let answerPromises = answers.map(answer => {
+                return new Promise((resolve, reject) => {
+                    ExamModel.findById(answer.examId, "time total datetime answer", (err, exam) => {
+                        if (err) reject(err)
+                        if (!exam)
+                            reject("Bài kiểm tra không tồn tài")
+                        exam.time = exam.time / 60
+
+                        pass = Math.round((Date.now() - answer.start) / 1000)
+                        if (pass >= exam.time * 60) {
+                            answer.end = Date.now()
+                            answer.remain = 0
+                            answer.answer = answer.answer.toUpperCase()
+                            answer.correct = 0
+                            answer.status = "done"
+
+
+                            length = Math.min(answer.answer.length, exam.answer.length)
+                            for (let i = 0; i < length; i++) {
+                                answer.correct += (answer.answer[i] === exam.answer[i])
+                            }
+                            answer.point = Math.round((answer.correct / exam.total * 10) * 100) / 100
+                            AnswerModel.updateOne({ _id: answer.id }, answer, (err, a) => {
+                                if (err) reject(err)
+                                UserModel.findById(answer.userId, (err, user) => {
+                                    if (err) reject(err)
+                                    if (user.role != "admin") {
+                                        if (user.remain - exam.time <= 0) {
+                                            user.active = false
+                                            user.remain = 0
+                                        }
+                                        else {
+                                            user.active = true
+                                            user.remain = user.remain - exam.time
+                                        }
+                                        UserModel.updateOne({ _id: answer.userId }, user, err => {
+                                            if (err) reject(err)
+                                            resolve()
+                                        })
+                                    }
+                                    resolve()
+                                })
+                            })
+                        }
+                        resolve()
+                    })
+                })
+            })
+
+            Promise.all(answerPromises)
+                .then(() => {
+                    AnswerModel.countDocuments({ status: "doing" }, (err, count) => {
+                        if (err) return error(res, err)
+                        return success(res, { doingCount: count })
+                    })
+                })
+                .catch((err) => {
+                    return error(res, err)
+                })
+
+        })
+
+
+
+    }
     else {
         if (req.authz.role != "admin" && req.authz.role != "teacher")
             return fail(res, "Chỉ admin có thể liệt kê tất cả các bài kiểm tra")
