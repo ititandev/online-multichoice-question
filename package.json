@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "start": "nodemon ./bin/www",
-    "frontend": "cd ../mcq-frontend/mcq-frontend/ && git checkout frontend && git pull origin frontend && yarn build && rm -rf ../../online-multichoice-question/public && cp -rf build ../../online-multichoice-question/public"
+    "frontend": "cd ../mcq-frontend/mcq-frontend/ && git checkout frontend && git pull -X theirs origin frontend && rm -rf ../../online-multichoice-question/public && cp -rf build ../../online-multichoice-question/public"
   },
   "dependencies": {
     "async": "^3.0.0",

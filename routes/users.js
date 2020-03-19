@@ -96,7 +96,8 @@ router.get("/user", function (req, res, next) {
 });
 
 router.get("/users", (req, res) => {
-  if (req.authz.role != "admin" && req.authz.role != "teacher")
+  console.log(req.authz.role)
+  if (!["admin", "teacher", "parent"].includes(req.authz.role))
     return fail(res, "Chỉ admin có thể thực hiện")
 
   if (!req.query.limit)

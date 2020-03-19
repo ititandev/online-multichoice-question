@@ -391,7 +391,7 @@ router.get("/exams/export", (req, res) => {
 })
 
 router.get("/exams/users/:id/export", (req, res) => {
-    if (req.authz.role != "admin" && req.authz.role != "teacher")
+    if (!["admin", "teacher", "parent"].includes(req.authz.role))
         return fail(res, "Không đủ quyền xuất báo cáo bài làm")
 
     AnswerModel.find({
