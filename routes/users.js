@@ -31,7 +31,8 @@ router.post("/signup", (req, res) => {
         email: req.body.email,
         name: req.body.name,
         phone: req.body.phone,
-        password: hash
+        password: hash,
+        role: req.body.role == "parent" ? "parent" : "user"
       });
 
       user.save(err => {
