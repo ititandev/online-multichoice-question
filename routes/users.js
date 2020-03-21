@@ -96,7 +96,6 @@ router.get("/user", function (req, res, next) {
 });
 
 router.get("/users", (req, res) => {
-  console.log(req.authz.role)
   if (!["admin", "teacher", "parent"].includes(req.authz.role))
     return fail(res, "Chỉ admin có thể thực hiện")
 
@@ -331,7 +330,6 @@ router.post("/users/import", async (req, res) => {
 
     Promise.all(promises)
       .then(() => {
-        console.log(response)
         return success(res, response)
       })
       .catch(err => {
