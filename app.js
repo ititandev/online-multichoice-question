@@ -8,6 +8,7 @@ const userRouter = require("./routes/users");
 const otherRouter = require("./routes/other")
 const classRouter = require("./routes/classes")
 const examRouter = require("./routes/exams")
+const adRouter = require("./routes/ads")
 const lectureRouter = require("./routes/lectures")
 const imageRouter = require("./routes/images")
 const fileUpload = require('express-fileupload')
@@ -77,6 +78,7 @@ app.use("/api/", userRouter);
 app.use("/api/", classRouter);
 app.use("/api/", examRouter);
 app.use("/api/", lectureRouter);
+app.use("/api/", adRouter);
 app.use("/api/", imageRouter);
 app.use("/api/", otherRouter);
 
