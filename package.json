@@ -3,7 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "pm2 start ./bin/www -i 2 --watch&& pm2 logs",
+    "start": "pm2 start ./bin/www -i 2 && pm2 logs",
+    "dev": "pm2 start ./bin/www -i 1 --watch && pm2 logs",
     "frontend": "cd ../mcq-frontend/mcq-frontend/ && git checkout frontend && git pull -X theirs origin frontend && rm -rf ../../online-multichoice-question/public && cp -rf build ../../online-multichoice-question/public",
     "nodemon": "nodemon ./bin/www",
     "preinstall": "npm install pm2 -g"
