@@ -8,7 +8,21 @@ var ObjectId = require("mongoose").Types.ObjectId;
 router.get("/ad", (req, res) => {
     if (!req.query.num)
         req.query.num = 1
-        
+    AdModel.find({ active: true }, (err, ads) => {
+        if (err) return error(res, err)
+
+        while (ads.length < req.query.num) {
+            idx = Math.floor(Math.random() * ads.length);
+            addElement = ads[Math.floor(Math.random() * ads.length)];
+            ads.splice(idx, 0, addElement)
+        }
+        while (ads.length > req.query.num) {
+            idx = Math.floor(Math.random() * ads.length);
+            ads.splice(idx, 1);
+        }
+
+        return success(res, ads)
+    })
 })
 
 router.get("/ads", (req, res) => {

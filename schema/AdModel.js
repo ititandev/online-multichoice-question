@@ -7,6 +7,7 @@ const AdSchema = new Schema({
     linkClick: {type: String, required: true},
     datetime: { type: Date, default: Date.now, required: true },
     view: {type: Number, default: 0},
+    click: {type: Number, default: 0},
     active: {type: Boolean, required: true, default: true},
 });
 const AdModel = mongoose.model('ads', AdSchema);
