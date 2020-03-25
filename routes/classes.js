@@ -40,7 +40,7 @@ router.get("/classes/subjects", (req, res) => {
 });
 
 router.post("/classes", (req, res) => {
-    if (req.authz.role != "admin")
+    if (!["admin", "dean"].includes(req.authz.role))
         return fail(res, "Chỉ admin có thể tạo lớp học");
     ClassModel.find({ name: req.body.name }, (err, classes) => {
         if (err) return error(res, err);
@@ -53,7 +53,7 @@ router.post("/classes", (req, res) => {
 });
 
 router.put("/classes/:id", (req, res) => {
-    if (req.authz.role != "admin")
+    if (!["admin", "dean"].includes(req.authz.role))
         return fail(res, "Chỉ admin có thể chỉnh sửa lớp học");
     ClassModel.updateOne(
         { _id: req.params.id },
@@ -66,7 +66,7 @@ router.put("/classes/:id", (req, res) => {
 });
 
 router.delete("/classes/:id", (req, res) => {
-    if (req.authz.role != "admin")
+    if (!["admin", "dean"].includes(req.authz.role))
         return fail(res, "Chỉ admin có thể xóa lớp học");
 
     SubjectModel.countDocuments(
@@ -93,7 +93,7 @@ router.get("/subjects/:id", (req, res) => {
 });
 
 router.post("/subjects", (req, res) => {
-    if (req.authz.role != "admin")
+    if (!["admin", "dean"].includes(req.authz.role))
         return fail(res, "Chỉ admin có thể tạo môn học");
     ClassModel.find({ _id: req.body.classId }, (err, classes) => {
         if (err) return error(res, err);
@@ -116,7 +116,7 @@ router.post("/subjects", (req, res) => {
 });
 
 router.put("/subjects/:id", (req, res) => {
-    if (req.authz.role != "admin")
+    if (!["admin", "dean"].includes(req.authz.role))
         return fail(res, "Chỉ admin có thể chỉnh sửa môn học");
     SubjectModel.updateOne(
         { _id: req.params.id },
@@ -129,7 +129,7 @@ router.put("/subjects/:id", (req, res) => {
 });
 
 router.delete("/subjects/:id", (req, res) => {
-    if (req.authz.role != "admin")
+    if (!["admin", "dean"].includes(req.authz.role))
         return fail(res, "Chỉ admin có thể xóa môn học");
     ContentModel.countDocuments({ subjectId: req.params.id }, (err, count) => {
         if (err) return error(res, err);
@@ -165,7 +165,7 @@ router.get("/contents/:id", (req, res) => {
 });
 
 router.post("/contents", (req, res) => {
-    if (req.authz.role != "admin")
+    if (!["admin", "dean"].includes(req.authz.role))
         return fail(res, "Chỉ admin có thể tạo chương");
     SubjectModel.find({ _id: req.body.subjectId }, (err, subjects) => {
         if (err) return error(res, err);
@@ -188,7 +188,7 @@ router.post("/contents", (req, res) => {
 });
 
 router.put("/contents/:id", (req, res) => {
-    if (req.authz.role != "admin")
+    if (!["admin", "dean"].includes(req.authz.role))
         return fail(res, "Chỉ admin có thể chỉnh sửa chương");
     ContentModel.updateOne(
         { _id: req.params.id },
@@ -201,7 +201,7 @@ router.put("/contents/:id", (req, res) => {
 });
 
 router.delete("/contents/:id", (req, res) => {
-    if (req.authz.role != "admin")
+    if (!["admin", "dean"].includes(req.authz.role))
         return fail(res, "Chỉ admin có thể xóa chương");
 
     LessonModel.countDocuments({ contentId: req.params.id }, (err, count) => {
@@ -229,7 +229,7 @@ router.get("/lessons/:id", (req, res) => {
 });
 
 router.post("/lessons", (req, res) => {
-    if (req.authz.role != "admin")
+    if (!["admin", "dean"].includes(req.authz.role))
         return fail(res, "Chỉ admin có thể tạo bài học");
     ContentModel.find({ _id: req.body.contentId }, (err, subjects) => {
         if (err) return error(res, err);
@@ -252,7 +252,7 @@ router.post("/lessons", (req, res) => {
 });
 
 router.put("/lessons/:id", (req, res) => {
-    if (req.authz.role != "admin")
+    if (!["admin", "dean"].includes(req.authz.role))
         return fail(res, "Chỉ admin có thể chỉnh sửa bài học");
     LessonModel.updateOne(
         { _id: req.params.id },
@@ -265,7 +265,7 @@ router.put("/lessons/:id", (req, res) => {
 });
 
 router.delete("/lessons/:id", (req, res) => {
-    if (req.authz.role != "admin")
+    if (!["admin", "dean"].includes(req.authz.role))
         return fail(res, "Chỉ admin có thể xóa bài học");
 
     ExamModel.countDocuments(

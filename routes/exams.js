@@ -155,8 +155,8 @@ router.get("/exams", (req, res) => {
 
     }
     else {
-        if (req.authz.role != "admin" && req.authz.role != "teacher")
-            return fail(res, "Chỉ admin có thể liệt kê tất cả các bài kiểm tra")
+        if (!["admin", "dean", "teacher"].includes(req.authz.role))
+            return fail(res, "Không đủ quyền liệt kê tất cả các bài kiểm tra")
         if (!req.query.limit)
             req.query.limit = 10
         if (!req.query.page)
@@ -227,7 +227,7 @@ router.get("/exams", (req, res) => {
 
 
 router.get("/exams/export", (req, res) => {
-    if (req.authz.role != "admin" & req.authz.role != "teacher")
+    if (!["admin", "dean", "teacher"].includes(req.authz.role))
         return fail(res, "Không đủ quyền xuất báo cáo bài làm")
 
     ExamModel.find()
@@ -391,7 +391,7 @@ router.get("/exams/export", (req, res) => {
 })
 
 router.get("/exams/users/:id/export", (req, res) => {
-    if (!["admin", "teacher", "parent"].includes(req.authz.role))
+    if (!["admin", "dean", "teacher", "parent"].includes(req.authz.role))
         return fail(res, "Không đủ quyền xuất báo cáo bài làm")
 
     AnswerModel.find({
@@ -510,8 +510,8 @@ router.get("/exams/users/:id/export", (req, res) => {
 })
 
 router.get("/exams/:id", (req, res) => {
-    if (req.authz.role != "admin" && req.authz.role != "teacher")
-        return fail(res, "Chỉ admin có thể thực hiện")
+    if (!["admin", "dean", "teacher"].includes(req.authz.role))
+        return fail(res, "Không đủ quyền thực hiện")
     ExamModel.findById(req.params.id, (err, exam) => {
         if (err) return error(res, err)
         if (!exam)
@@ -597,7 +597,7 @@ router.get("/exam/:id", (req, res) => {
                                     exam._doc.answers = answers
                                     exam.answer = undefined
 
-                                    if (req.authz.role != "admin" && req.authz.role != "teacher") {
+                                    if (!["admin", "dean", "teacher"].includes(req.authz.role)) {
                                         UserModel.findById(req.authz.uid, (err, user) => {
                                             if (err) return error(res, err)
                                             if (user.remain - exam.time <= 0) {
@@ -648,7 +648,7 @@ router.get("/exam/:id", (req, res) => {
 })
 
 router.get("/exams/lessons/:id", (req, res) => {
-    if (req.authz.role != "admin" && req.authz.role != "teacher")
+    if (!["admin", "dean", "teacher"].includes(req.authz.role))
         return fail(res, "Chỉ admin có thể liệt kê tất cả các bài kiểm tra")
     if (!req.query.limit)
         req.query.limit = 10
@@ -748,7 +748,7 @@ router.get("/examslectures/lessons/:id", (req, res) => {
 })
 
 router.post("/exams", (req, res) => {
-    if (req.authz.role != "admin" && req.authz.role != "teacher")
+    if (!["admin", "dean", "teacher"].includes(req.authz.role))
         return fail(res, "Chỉ admin có thể tạo bài kiểm tra")
     LessonModel.find({ _id: req.body.lessonId }, (err, lessons) => {
         if (err) return error(res, err)
@@ -774,7 +774,7 @@ router.post("/exams", (req, res) => {
 })
 
 router.put("/exams/:id", (req, res) => {
-    if (req.authz.role != "admin" && req.authz.role != "teacher")
+    if (!["admin", "dean", "teacher"].includes(req.authz.role))
         return fail(res, "Chỉ admin có thể chỉnh sửa bài kiểm tra")
     req.body.answer = req.body.answer.toUpperCase().replace(/[^ABCD]/g, '')
     req.body.total = req.body.answer.length
@@ -783,7 +783,7 @@ router.put("/exams/:id", (req, res) => {
         if (err) return error(res, err)
         if (!exam)
             return fail(res, "Bài kiểm tra không tồn tại")
-        if (exam.userId != req.authz.uid && req.authz.role == "teacher")
+        if (exam.userId != req.authz.uid && ["dean", "teacher"].includes(req.authz.role))
             return fail(res, "Giáo viên không thể chỉnh sửa bài kiểm tra của người khác")
         ExamModel.updateOne({ _id: req.params.id }, req.body, (err, r) => {
             if (err) return error(res, err)
@@ -793,13 +793,13 @@ router.put("/exams/:id", (req, res) => {
 })
 
 router.delete("/exams/:id", (req, res) => {
-    if (req.authz.role != "admin" && req.authz.role != "teacher")
+    if (!["admin", "dean", "teacher"].includes(req.authz.role))
         return fail(res, "Chỉ admin có thể xóa bài kiểm tra")
     ExamModel.findById(req.params.id, (err, exam) => {
         if (err) return error(res, err)
         if (!exam)
             return fail(res, "Bài kiểm tra không tồn tại")
-        if (exam.userId != req.authz.uid && req.authz.role == "teacher")
+        if (exam.userId != req.authz.uid && ["dean", "teacher"].includes(req.authz.role))
             return fail(res, "Giáo viên không thể xóa bài kiểm tra của người khác")
         ExamModel.deleteOne({ _id: req.params.id }, err => {
             if (err) return error(res, err)
@@ -823,7 +823,7 @@ router.get("/answer/:id", (req, res) => {
         if (err) return error(res, err)
         if (!answer)
             return fail(res, "Bài làm không tồn tài")
-        if (answer.userId != req.authz.uid && req.authz.role != "admin" && req.authz.role != "teacher")
+        if (answer.userId != req.authz.uid && (!["admin", "dean", "teacher"].includes(req.authz.role)))
             return fail(res, "Chỉ được phép xem bài làm của bạn")
         ExamModel.findById(answer.examId, (err, exam) => {
             if (err) return error(res, err)
@@ -888,7 +888,7 @@ function getAnswerbyExam(req, res) {
 }
 
 router.get("/answers/exams/:id", async (req, res) => {
-    if (req.authz.role != "admin" && req.authz.role != "teacher")
+    if (!["admin", "dean", "teacher"].includes(req.authz.role))
         return fail(res, "Chỉ admin có thể thực hiện")
 
     ExamModel.findById(req.params.id, "time total datetime answer", (err, exam) => {
@@ -957,7 +957,7 @@ router.get("/answers/exams/:id", async (req, res) => {
 })
 
 router.get("/answers/exams/:id/export", (req, res) => {
-    if (req.authz.role != "admin" && req.authz.role != "teacher")
+    if (!["admin", "dean", "teacher"].includes(req.authz.role))
         return fail(res, "Không đủ quyền xuất báo cáo bài làm")
 
     AnswerModel.find({
@@ -1107,7 +1107,7 @@ router.put("/answers/:id", (req, res) => {
                 req.body.point = Math.round((req.body.correct / exam.total * 10) * 100) / 100
                 AnswerModel.updateOne({ _id: req.params.id }, req.body, (err, answers) => {
                     if (err) return error(res, err)
-                    if (req.authz.role != "admin" && req.authz.role != "teacher") {
+                    if (!["admin", "dean", "teacher"].includes(req.authz.role)) {
                         UserModel.findById(req.authz.uid, (err, user) => {
                             if (err) return error(res, err)
                             if (user.remain - exam.time / 60 <= 0) {

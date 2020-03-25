@@ -5,7 +5,7 @@ const LectureModel = require("../schema/LectureModel");
 const { success, error, fail } = require("../common");
 
 router.get("/lectures", (req, res) => {
-    if (req.authz.role != "admin" && req.authz.role != "teacher")
+    if (!["admin", "dean", "teacher"].includes(req.authz.role))
         return fail(res, "Chỉ admin có thể liệt kê tất cả các bài giảng")
 
     if (!req.query.limit)
@@ -76,7 +76,7 @@ router.get("/lectures", (req, res) => {
 
 
 router.get("/lectures/:id", (req, res) => {
-    if (req.authz.role != "admin" && req.authz.role != "teacher")
+    if (!["admin", "dean", "teacher"].includes(req.authz.role))
         return fail(res, "Chỉ admin có thể thực hiện")
 
     LectureModel.findById(req.params.id, (err, lecture) => {
@@ -99,9 +99,8 @@ router.post("/lectures/:id", (req, res) => {
 })
 
 router.get("/lectures/lessons/:id", (req, res) => {
-    if (req.authz.role != "admin" && req.authz.role != "teacher") {
+    if (!["admin", "dean", "teacher"].includes(req.authz.role)) 
         return fail(res, "Chỉ admin và giáo viên có thể thực hiện")
-    }
 
     if (!req.query.limit)
         req.query.limit = 10
@@ -162,8 +161,8 @@ router.get("/lectures/lessons/:id", (req, res) => {
 })
 
 router.post("/lectures", (req, res) => {
-    if (req.authz.role != "admin" && req.authz.role != "teacher")
-        return fail(res, "Chỉ admin/teacher có thể tạo bài giảng")
+    if (!["admin", "dean", "teacher"].includes(req.authz.role))
+        return fail(res, "Không đủ quyền tạo bài giảng")
     LessonModel.findById(req.body.lessonId, (err, lesson) => {
         if (err) return error(res, err)
         if (!lesson)
@@ -183,14 +182,14 @@ router.post("/lectures", (req, res) => {
 })
 
 router.put("/lectures/:id", (req, res) => {
-    if (req.authz.role != "admin" && req.authz.role != "teacher")
+    if (!["admin", "dean", "teacher"].includes(req.authz.role))
         return fail(res, "Chỉ admin có thể chỉnh sửa bài giảng")
 
     LectureModel.findById(req.params.id, (err, lecture) => {
         if (err) return error(res, err)
         if (!lecture)
             return fail(res, "Bài giảng không tồn tại")
-        if (lecture.userId != req.authz.uid && req.authz.role == "teacher")
+        if (lecture.userId != req.authz.uid && ["dean", "teacher"].includes(req.authz.role))
             return fail(res, "Giáo viên không thể chỉnh sửa bài giảng của người khác")
         LectureModel.updateOne({ _id: req.params.id }, req.body, (err, r) => {
             if (err) return error(res, err)
@@ -200,13 +199,13 @@ router.put("/lectures/:id", (req, res) => {
 })
 
 router.delete("/lectures/:id", (req, res) => {
-    if (req.authz.role != "admin" && req.authz.role != "teacher")
-        return fail(res, "Chỉ admin có thể xóa bài giảng")
+    if (!["admin", "dean", "teacher"].includes(req.authz.role))
+        return fail(res, "Không đủ quyền có thể xóa bài giảng")
     LectureModel.findById(req.params.id, (err, lecture) => {
         if (err) return error(res, err)
         if (!lecture)
             return fail(res, "Bài giảng không tồn tại")
-        if (lecture.userId != req.authz.uid && req.authz.role == "teacher")
+        if (lecture.userId != req.authz.uid && ["dean", "teacher"].includes(req.authz.role))
             return fail(res, "Giáo viên không thể xóa bài giảng của người khác")
         LectureModel.deleteOne({ _id: req.params.id }, err => {
             if (err) return error(res, err)
