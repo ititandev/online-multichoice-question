@@ -57,6 +57,17 @@ router.get("/ads", (req, res) => {
         })
 })
 
+router.get("/ads/:id", (req, res) => {
+    if (req.authz.role != "admin")
+        return fail(res, "Chỉ admin có thể thực hiện")
+    AdModel.findById(req.params.id, (err, ad) => {
+        if (err) return error(res, err)
+        if (!ad)
+            return fail(res, "Quảng cáo không tồn tại")
+        return success(res, ad)
+    })
+})
+
 router.post("/ads", (req, res) => {
     if (req.authz.role != "admin")
         return fail(res, "Chỉ admin có thể thực hiện")
