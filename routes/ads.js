@@ -40,7 +40,7 @@ router.get("/ads", (req, res) => {
         query.active = req.query.active
 
     AdModel.find(query)
-        .select("_id name type view active datetime")
+        .select("_id name type linkImage view active datetime")
         .sort(req.query.sort)
         .skip((req.query.page - 1) * req.query.limit)
         .limit(parseInt(req.query.limit))
