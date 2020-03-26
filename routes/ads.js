@@ -6,22 +6,45 @@ var ObjectId = require("mongoose").Types.ObjectId;
 
 
 router.get("/ad", (req, res) => {
-    if (!req.query.num)
-        req.query.num = 1
-    AdModel.find({ active: true }, (err, ads) => {
+    if (!req.query.horizontal)
+        req.query.horizontal = 1
+    if (!req.query.vertical)
+        req.query.vertical = 1
+
+    if (req.query.horizontal < 0)
+        return fail(res, "Không hợp lệ")
+    if (req.query.vertical < 0)
+        return fail(res, "Không hợp lệ")
+
+
+    AdModel.find({ active: true, type: "horizontal" }, (err, horizontal) => {
         if (err) return error(res, err)
 
-        while (ads.length < req.query.num) {
-            idx = Math.floor(Math.random() * ads.length);
-            addElement = ads[Math.floor(Math.random() * ads.length)];
-            ads.splice(idx, 0, addElement)
+        while (horizontal.length < req.query.horizontal) {
+            idx = Math.floor(Math.random() * horizontal.length);
+            addElement = horizontal[Math.floor(Math.random() * horizontal.length)];
+            horizontal.splice(idx, 0, addElement)
         }
-        while (ads.length > req.query.num) {
-            idx = Math.floor(Math.random() * ads.length);
-            ads.splice(idx, 1);
+        while (horizontal.length > req.query.num) {
+            idx = Math.floor(Math.random() * horizontal.length);
+            horizontal.splice(idx, 1);
         }
 
-        return success(res, ads)
+        AdModel.find({ active: true, type: "vertical" }, (err, vertical) => {
+            if (err) return error(res, err)
+
+            while (vertical.length < req.query.vertical) {
+                idx = Math.floor(Math.random() * vertical.length);
+                addElement = vertical[Math.floor(Math.random() * vertical.length)];
+                vertical.splice(idx, 0, addElement)
+            }
+            while (vertical.length > req.query.num) {
+                idx = Math.floor(Math.random() * vertical.length);
+                vertical.splice(idx, 1);
+            }
+
+            return success(res, {horizontal, vertical})
+        })
     })
 })
 
