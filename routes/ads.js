@@ -89,7 +89,7 @@ router.put("/ads/:id", (req, res) => {
     })
 })
 
-router.delete("/ads:id", (req, res) => {
+router.delete("/ads/:id", (req, res) => {
     if (req.authz.role != "admin")
         return fail(res, "Chỉ admin có thể thực hiện")
     AdModel.deleteOne({ _id: req.params.id }, err => {
