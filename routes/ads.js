@@ -1,6 +1,6 @@
 var express = require("express");
 var router = express.Router();
-const AdModel = require("../schema/qcModel");
+const AdModel = require("../schema/AdModel");
 const { success, error, fail } = require("../common");
 var ObjectId = require("mongoose").Types.ObjectId;
 
@@ -105,7 +105,7 @@ router.put("/qcs/:id", (req, res) => {
     })
 })
 
-router.delete("/qcs/:id", (req, res) => {
+router.delete("/`qc`s/:id", (req, res) => {
     if (req.authz.role != "admin")
         return fail(res, "Chỉ admin có thể thực hiện")
     AdModel.deleteOne({ _id: req.params.id }, err => {
