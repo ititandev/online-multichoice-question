@@ -1,11 +1,11 @@
 var express = require("express");
 var router = express.Router();
-const AdModel = require("../schema/AdModel");
+const AdModel = require("../schema/qcModel");
 const { success, error, fail } = require("../common");
 var ObjectId = require("mongoose").Types.ObjectId;
 
 
-router.get("/ad", (req, res) => {
+router.get("/qc", (req, res) => {
 
     AdModel.find({ active: true, type: "horizontal" }, (err, horizontal) => {
         if (err) return error(res, err)
@@ -41,7 +41,7 @@ router.get("/ad", (req, res) => {
     })
 })
 
-router.get("/ads", (req, res) => {
+router.get("/qcs", (req, res) => {
     if (req.authz.role != "admin")
         return fail(res, "Chỉ admin có thể thực hiện")
     if (!req.query.limit)
@@ -65,15 +65,15 @@ router.get("/ads", (req, res) => {
             AdModel.countDocuments(query, (err, totalPage) => {
                 if (err) return error(res, err)
                 totalPage = Math.ceil(totalPage / req.query.limit)
-                previous = req.query.page > 1 ? req.protocol + "://" + req.get("host") + "/api/ads?page=" + (Number(req.query.page) - 1) + "&limit=" + req.query.limit : null
-                next = req.query.page < totalPage ? req.protocol + "://" + req.get("host") + "/api/ads?page=" + (Number(req.query.page) + 1) + "&limit=" + req.query.limit : null
+                previous = req.query.page > 1 ? req.protocol + "://" + req.get("host") + "/api/qcs?page=" + (Number(req.query.page) - 1) + "&limit=" + req.query.limit : null
+                next = req.query.page < totalPage ? req.protocol + "://" + req.get("host") + "/api/qcs?page=" + (Number(req.query.page) + 1) + "&limit=" + req.query.limit : null
                 data = { totalPage: totalPage, page: req.query.page, data: ads, previous: previous, next: next }
                 return success(res, data)
             })
         })
 })
 
-router.get("/ads/:id", (req, res) => {
+router.get("/qcs/:id", (req, res) => {
     if (req.authz.role != "admin")
         return fail(res, "Chỉ admin có thể thực hiện")
     AdModel.findById(req.params.id, (err, ad) => {
@@ -84,7 +84,7 @@ router.get("/ads/:id", (req, res) => {
     })
 })
 
-router.post("/ads", (req, res) => {
+router.post("/qcs", (req, res) => {
     if (req.authz.role != "admin")
         return fail(res, "Chỉ admin có thể thực hiện")
     if (!(req.body.name && req.body.type && req.body.linkImage && req.body.linkClick))
@@ -96,7 +96,7 @@ router.post("/ads", (req, res) => {
     })
 })
 
-router.put("/ads/:id", (req, res) => {
+router.put("/qcs/:id", (req, res) => {
     if (req.authz.role != "admin")
         return fail(res, "Chỉ admin có thể thực hiện")
     AdModel.updateOne({ _id: req.params.id }, req.body, (err, r) => {
@@ -105,7 +105,7 @@ router.put("/ads/:id", (req, res) => {
     })
 })
 
-router.delete("/ads/:id", (req, res) => {
+router.delete("/qcs/:id", (req, res) => {
     if (req.authz.role != "admin")
         return fail(res, "Chỉ admin có thể thực hiện")
     AdModel.deleteOne({ _id: req.params.id }, err => {
