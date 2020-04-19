@@ -169,7 +169,7 @@ router.get("/exams", (req, res) => {
         } : {}
 
         ExamModel.find(query)
-            .select("name datetime lessonId password userId")
+            .select("name datetime lessonId password userId package")
             .populate({
                 path: 'lessonId',
                 select: 'name contentId',
@@ -214,7 +214,8 @@ router.get("/exams", (req, res) => {
                                 datetime: element.datetime,
                                 password: (element.password) ? true : false,
                                 userName: element.userId.name,
-                                userEmail: element.userId.email
+                                userEmail: element.userId.email,
+                                package: element.package
                             }
                     })
                     data = { totalPage: totalPage, page: req.query.page, data: exams, previous: previous, next: next }
@@ -525,7 +526,7 @@ router.get("/exam/:id", (req, res) => {
     if (req.authz.role == "anony") {
         return fail(res, "Vui lòng đăng nhập trước khi thực hiện")
     } else {
-        ExamModel.findById(req.params.id, "name time total datetime password answer", (err, exam) => {
+        ExamModel.findById(req.params.id, "name time total datetime password answer package", (err, exam) => {
             if (err) return error(res, err);
             if (!exam)
                 return fail(res, "Bài kiểm tra không tồn tài")
@@ -663,7 +664,7 @@ router.get("/exams/lessons/:id", (req, res) => {
     } : { lessonId: req.params.id }
 
     ExamModel.find(query)
-        .select("name datetime lessonId password userId")
+        .select("name datetime lessonId password userId package")
         .populate({
             path: 'lessonId',
             select: 'name contentId',
@@ -708,7 +709,8 @@ router.get("/exams/lessons/:id", (req, res) => {
                             datetime: element.datetime,
                             password: (element.password) ? true : false,
                             userName: element.userId.name,
-                            userEmail: element.userId.email
+                            userEmail: element.userId.email,
+                            package: element.package
                         }
                 })
                 data = { totalPage: totalPage, page: req.query.page, data: exams, previous: previous, next: next }
@@ -719,7 +721,7 @@ router.get("/exams/lessons/:id", (req, res) => {
 
 router.get("/examslectures/lessons/:id", (req, res) => {
     ExamModel.find({ lessonId: req.params.id })
-        .select("name datetime")
+        .select("name datetime package")
         .exec((err, exams) => {
             if (err) return error(res, err)
             if (!exams)
@@ -728,7 +730,7 @@ router.get("/examslectures/lessons/:id", (req, res) => {
                 element._doc.type = "exam"
             });
             LectureModel.find({ lessonId: req.params.id })
-                .select("name datetime password")
+                .select("name datetime password package")
                 .exec((err, lectures) => {
                     if (err) return error(res, err)
                     if (!lectures)
@@ -1035,10 +1037,13 @@ router.get("/answers/exams/:id/export", (req, res) => {
 router.post("/answers", (req, res) => {
     if (req.authz.role == "anony")
         return fail(res, "Vui lòng đăng nhập trước khi làm bài kiểm tra")
-    ExamModel.findById(req.body.examId, "name time examUrl password contentId total datetime", (err, exam) => {
+    ExamModel.findById(req.body.examId, "name time examUrl password contentId total datetime package", (err, exam) => {
         if (err) return error(res, err)
         if (!exam)
             return fail(res, "Bài kiểm tra không tồn tại")
+        if (exam.package == "fee")
+            if (req.authz.package != "fee")
+                return fail("Vui lòng nâng cấp tài khoản để thực hiện")
         if (exam.password) {
             if (!req.body.password)
                 return fail(res, "Vui lòng nhập mật khẩu bài kiểm tra")

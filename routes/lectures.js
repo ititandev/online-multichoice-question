@@ -65,7 +65,8 @@ router.get("/lectures", (req, res) => {
                             datetime: element.datetime,
                             password: element.password ? element.password : null,
                             userName: element.userId ? element.userId.name : "",
-                            userEmail: element.userId ? element.userId.email : ""
+                            userEmail: element.userId ? element.userId.email : "",
+                            package: element.package
                         }
                 })
                 data = { totalPage: totalPage, page: req.query.page, data: lectures, previous: previous, next: next }
@@ -91,6 +92,11 @@ router.post("/lectures/:id", (req, res) => {
 
     LectureModel.findById(req.params.id, (err, lecture) => {
         if (err) return error(res, err)
+        if (!lecture)
+            return fail(res, "Bài giảng không tồn tại")
+        if (lecture.package == "fee")
+            if (req.authz.package != "fee")
+                return fail("Vui lòng nâng cấp tài khoản để thực hiện")
         if (lecture.password)
             if (req.body.password != lecture.password)
                 return fail(res, "Sai mật khẩu")
@@ -151,7 +157,11 @@ router.get("/lectures/lessons/:id", (req, res) => {
                             contentName: element.lessonId.contentId.name,
                             subjectName: element.lessonId.contentId.subjectId.name,
                             className: element.lessonId.contentId.subjectId.classId.name,
-                            datetime: element.datetime
+                            datetime: element.datetime,
+                            password: element.password ? element.password : null,
+                            userName: element.userId ? element.userId.name : "",
+                            userEmail: element.userId ? element.userId.email : "",
+                            package: element.package
                         }
                 })
                 data = { totalPage: totalPage, page: req.query.page, data: lectures, previous: previous, next: next }

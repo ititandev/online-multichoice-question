@@ -6,7 +6,8 @@ const LectureSchema = new Schema({
     lessonId: { type: Schema.Types.ObjectId, ref: 'lessons', required: true },
     userId: { type: Schema.Types.ObjectId, ref: 'users', required: true },
     datetime: { type: Date, default: Date.now },
-    password: {type: String, require: false}
+    password: {type: String, require: false},
+    package: {type: String, default: "free"}
 });
 const LectureModel = mongoose.model('lectures', LectureSchema);
 
