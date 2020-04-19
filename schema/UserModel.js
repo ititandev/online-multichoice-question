@@ -8,7 +8,8 @@ const UserSchema = new Schema({
     role: {type: String, required: true, default: "user" },
     datetime: { type: Date, default: Date.now },
     active: {type: Boolean, required: true, default: false},
-    remain: {type: Number, required: true, default: 18000}
+    remain: {type: Number, required: true, default: 18000},
+    package: {type: String, default: "free"}
 });
 const UserModel = mongoose.model('users', UserSchema);
 

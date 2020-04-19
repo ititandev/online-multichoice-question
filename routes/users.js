@@ -45,37 +45,34 @@ router.post("/signup", (req, res) => {
 });
 
 router.post("/login", function (req, res, next) {
-  UserModel.findOne(
-    {
-      email: req.body.email
-    },
-    (err, user) => {
-      if (err)
-        return err(res, err)
+  UserModel.findOne({ email: req.body.email }, (err, user) => {
+    if (err)
+      return err(res, err)
 
-      if (!user)
-        return fail(res, "Tài khoản không tồn tại")
+    if (!user)
+      return fail(res, "Tài khoản không tồn tại")
 
-      if (user.active == false)
-        return fail(res, "Tài khoản chưa được kích hoạt")
+    if (user.active == false)
+      return fail(res, "Tài khoản chưa được kích hoạt")
 
-      bcrypt.compare(req.body.password, user.password, (err, result) => {
-        if (result) {
-          token = createJWToken(
-            {
-              uid: user._id,
-              role: user.role
-            },
-            82800
-          );
-          res.set("Authorization", token);
-          delete user.password;
-          return success(res, { token: token, user: user });
-        }
-        else
-          return fail(res, "Sai mật khẩu")
-      });
-    }
+    bcrypt.compare(req.body.password, user.password, (err, result) => {
+      if (result) {
+        token = createJWToken(
+          {
+            uid: user._id,
+            role: user.role,
+            package: user.package
+          },
+          82800
+        );
+        res.set("Authorization", token);
+        delete user.password;
+        return success(res, { token: token, user: user });
+      }
+      else
+        return fail(res, "Sai mật khẩu")
+    });
+  }
   );
 });
 
@@ -118,7 +115,7 @@ router.get("/users", (req, res) => {
 
 
   UserModel.find(query)
-    .select("_id email name role phone datetime active remain")
+    .select("_id email name role phone datetime active remain package")
     .sort(req.query.sort)
     .skip((req.query.page - 1) * req.query.limit)
     .limit(parseInt(req.query.limit))
@@ -344,7 +341,7 @@ router.post("/users/import", async (req, res) => {
 
 router.put("/users", (req, res) => {
   if (req.authz.role == "anony")
-    return fail(res, "Ẩn danh không thể sử dụng API này")
+    return fail(res, "Vui lòng đăng nhập trước khi thực hiện")
   UserModel.findById(req.authz.uid, (err, user) => {
     if (err) return error(res, err)
     if (!user) return fail(res, "Tài khoản không tồn tại")
@@ -372,6 +369,7 @@ router.put("/users/:id", (req, res) => {
     if (req.body.name) user.name = req.body.name
     if (req.body.phone) user.phone = req.body.phone
     if (req.body.role) user.role = req.body.role
+    if (req.body.package) user.package = req.body.package
     if (req.body.active != undefined) user.active = req.body.active
     if (req.body.remain != undefined) user.remain = req.body.remain
 
