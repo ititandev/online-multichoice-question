@@ -66,7 +66,7 @@ router.get("/lectures", (req, res) => {
                             password: element.password ? element.password : null,
                             userName: element.userId ? element.userId.name : "",
                             userEmail: element.userId ? element.userId.email : "",
-                            package: element.package
+                            plan: element.plan
                         }
                 })
                 data = { totalPage: totalPage, page: req.query.page, data: lectures, previous: previous, next: next }
@@ -94,8 +94,8 @@ router.post("/lectures/:id", (req, res) => {
         if (err) return error(res, err)
         if (!lecture)
             return fail(res, "Bài giảng không tồn tại")
-        if (lecture.package == "fee")
-            if (req.authz.package != "fee")
+        if (lecture.plan == "pro")
+            if (req.authz.plan != "pro")
                 return fail("Vui lòng nâng cấp tài khoản để thực hiện")
         if (lecture.password)
             if (req.body.password != lecture.password)
@@ -105,7 +105,7 @@ router.post("/lectures/:id", (req, res) => {
 })
 
 router.get("/lectures/lessons/:id", (req, res) => {
-    if (!["admin", "dean", "teacher"].includes(req.authz.role)) 
+    if (!["admin", "dean", "teacher"].includes(req.authz.role))
         return fail(res, "Chỉ admin và giáo viên có thể thực hiện")
 
     if (!req.query.limit)
@@ -161,7 +161,7 @@ router.get("/lectures/lessons/:id", (req, res) => {
                             password: element.password ? element.password : null,
                             userName: element.userId ? element.userId.name : "",
                             userEmail: element.userId ? element.userId.email : "",
-                            package: element.package
+                            plan: element.plan
                         }
                 })
                 data = { totalPage: totalPage, page: req.query.page, data: lectures, previous: previous, next: next }

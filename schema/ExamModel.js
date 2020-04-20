@@ -12,7 +12,7 @@ const ExamSchema = new Schema({
     lessonId: { type: Schema.Types.ObjectId, ref: 'lessons', required: true },
     datetime: { type: Date, default: Date.now },
     userId: { type: Schema.Types.ObjectId, ref: 'users', default: Date.now },
-    package: {type: String, default: "free"}
+    plan: { type: String, default: "free" }
 });
 const ExamModel = mongoose.model('exams', ExamSchema);
 

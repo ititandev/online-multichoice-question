@@ -18,9 +18,9 @@ router.get("/exams", (req, res) => {
         if (req.authz.role == "anony")
             return fail(res, "Vui lòng đăng nhập trước khi thực hiện")
         AnswerModel.find({
-            userId: req.authz.uid,
-            status: "done"
-        })
+                userId: req.authz.uid,
+                status: "done"
+            })
             .select("_id point start")
             .populate({
                 path: "examId",
@@ -80,8 +80,7 @@ router.get("/exams", (req, res) => {
                 })
                 return success(res, data)
             })
-    }
-    else if (req.query.status == "doing") {
+    } else if (req.query.status == "doing") {
         // if (req.authz.role != "admin")
         // return fail(res, "Chỉ admin có thể thống kê")
         AnswerModel.find({
@@ -119,8 +118,7 @@ router.get("/exams", (req, res) => {
                                         if (user.remain - exam.time <= 0) {
                                             user.active = false
                                             user.remain = 0
-                                        }
-                                        else {
+                                        } else {
                                             user.active = true
                                             user.remain = user.remain - exam.time
                                         }
@@ -153,8 +151,7 @@ router.get("/exams", (req, res) => {
 
 
 
-    }
-    else {
+    } else {
         if (!["admin", "dean", "teacher"].includes(req.authz.role))
             return fail(res, "Không đủ quyền liệt kê tất cả các bài kiểm tra")
         if (!req.query.limit)
@@ -169,7 +166,7 @@ router.get("/exams", (req, res) => {
         } : {}
 
         ExamModel.find(query)
-            .select("name datetime lessonId password userId package")
+            .select("name datetime lessonId password userId plan")
             .populate({
                 path: 'lessonId',
                 select: 'name contentId',
@@ -215,7 +212,7 @@ router.get("/exams", (req, res) => {
                                 password: (element.password) ? true : false,
                                 userName: element.userId.name,
                                 userEmail: element.userId.email,
-                                package: element.package
+                                plan: element.plan
                             }
                     })
                     data = { totalPage: totalPage, page: req.query.page, data: exams, previous: previous, next: next }
@@ -260,12 +257,12 @@ router.get("/exams/export", (req, res) => {
                 className: {
                     headerStyle: { font: { bold: true } },
                     displayName: 'Lớp',
-                    cellFormat: function (value, element) {
-                        if (!element
-                            || !element.lessonId
-                            || !element.lessonId.contentId
-                            || !element.lessonId.contentId.subjectId
-                            || !element.lessonId.contentId.subjectId.classId)
+                    cellFormat: function(value, element) {
+                        if (!element ||
+                            !element.lessonId ||
+                            !element.lessonId.contentId ||
+                            !element.lessonId.contentId.subjectId ||
+                            !element.lessonId.contentId.subjectId.classId)
                             return ""
                         return element.lessonId.contentId.subjectId.classId.name
                     },
@@ -274,11 +271,11 @@ router.get("/exams/export", (req, res) => {
                 subjectName: {
                     headerStyle: { font: { bold: true } },
                     displayName: 'Môn học',
-                    cellFormat: function (value, element) {
-                        if (!element
-                            || !element.lessonId
-                            || !element.lessonId.contentId
-                            || !element.lessonId.contentId.subjectId)
+                    cellFormat: function(value, element) {
+                        if (!element ||
+                            !element.lessonId ||
+                            !element.lessonId.contentId ||
+                            !element.lessonId.contentId.subjectId)
                             return ""
                         return element.lessonId.contentId.subjectId.name
                     },
@@ -287,10 +284,10 @@ router.get("/exams/export", (req, res) => {
                 contentName: {
                     headerStyle: { font: { bold: true } },
                     displayName: 'Chương',
-                    cellFormat: function (value, element) {
-                        if (!element
-                            || !element.lessonId
-                            || !element.lessonId.contentId)
+                    cellFormat: function(value, element) {
+                        if (!element ||
+                            !element.lessonId ||
+                            !element.lessonId.contentId)
                             return ""
                         return element.lessonId.contentId.name
                     },
@@ -299,9 +296,9 @@ router.get("/exams/export", (req, res) => {
                 lessonName: {
                     headerStyle: { font: { bold: true } },
                     displayName: 'Bài',
-                    cellFormat: function (value, element) {
-                        if (!element
-                            || !element.lessonId)
+                    cellFormat: function(value, element) {
+                        if (!element ||
+                            !element.lessonId)
                             return ""
                         return element.lessonId.name
                     },
@@ -310,7 +307,7 @@ router.get("/exams/export", (req, res) => {
                 name: {
                     headerStyle: { font: { bold: true } },
                     displayName: 'Đề',
-                    cellFormat: function (value, row) {
+                    cellFormat: function(value, row) {
                         return row.name
                     },
                     width: 200
@@ -318,7 +315,7 @@ router.get("/exams/export", (req, res) => {
                 examUrl: {
                     headerStyle: { font: { bold: true } },
                     displayName: 'Link Đề',
-                    cellFormat: function (value, row) {
+                    cellFormat: function(value, row) {
                         return row.examUrl
                     },
                     width: 200
@@ -326,7 +323,7 @@ router.get("/exams/export", (req, res) => {
                 answer: {
                     headerStyle: { font: { bold: true } },
                     displayName: 'Đáp án',
-                    cellFormat: function (value, row) {
+                    cellFormat: function(value, row) {
                         return row.answer
                     },
                     width: 200
@@ -334,7 +331,7 @@ router.get("/exams/export", (req, res) => {
                 explainUrl: {
                     headerStyle: { font: { bold: true } },
                     displayName: 'Link giải thích',
-                    cellFormat: function (value, row) {
+                    cellFormat: function(value, row) {
                         return row.explainUrl
                     },
                     width: 200
@@ -342,7 +339,7 @@ router.get("/exams/export", (req, res) => {
                 time: {
                     headerStyle: { font: { bold: true } },
                     displayName: 'Thời gian (phút)',
-                    cellFormat: function (value, row) {
+                    cellFormat: function(value, row) {
                         return row.time / 60
                     },
                     width: 120
@@ -350,7 +347,7 @@ router.get("/exams/export", (req, res) => {
                 password: {
                     headerStyle: { font: { bold: true } },
                     displayName: 'Mật khẩu',
-                    cellFormat: function (value, row) {
+                    cellFormat: function(value, row) {
                         return row.password
                     },
                     width: 100
@@ -358,7 +355,7 @@ router.get("/exams/export", (req, res) => {
                 userEmail: {
                     headerStyle: { font: { bold: true } },
                     displayName: 'Email người tạo',
-                    cellFormat: function (value, row) {
+                    cellFormat: function(value, row) {
                         return row.userId ? row.userId.email : ""
                     },
                     width: 200
@@ -366,7 +363,7 @@ router.get("/exams/export", (req, res) => {
                 userName: {
                     headerStyle: { font: { bold: true } },
                     displayName: 'Tên người tạo',
-                    cellFormat: function (value, row) {
+                    cellFormat: function(value, row) {
                         return row.userId ? row.userId.name : ""
                     },
                     width: 200
@@ -374,7 +371,7 @@ router.get("/exams/export", (req, res) => {
                 note: {
                     headerStyle: { font: { bold: true } },
                     displayName: 'Ghi chú',
-                    cellFormat: function (value, row) {
+                    cellFormat: function(value, row) {
                         return row.note
                     },
                     width: 400
@@ -396,9 +393,9 @@ router.get("/exams/users/:id/export", (req, res) => {
         return fail(res, "Không đủ quyền xuất báo cáo bài làm")
 
     AnswerModel.find({
-        userId: req.params.id,
-        status: "done"
-    })
+            userId: req.params.id,
+            status: "done"
+        })
         .select("_id point start")
         .populate({
             path: "examId",
@@ -431,13 +428,13 @@ router.get("/exams/users/:id/export", (req, res) => {
                 className: {
                     headerStyle: { font: { bold: true } },
                     displayName: 'Lớp',
-                    cellFormat: function (value, element) {
-                        if (!element
-                            || !element.examId
-                            || !element.examId.lessonId
-                            || !element.examId.lessonId.contentId
-                            || !element.examId.lessonId.contentId.subjectId
-                            || !element.examId.lessonId.contentId.subjectId.classId)
+                    cellFormat: function(value, element) {
+                        if (!element ||
+                            !element.examId ||
+                            !element.examId.lessonId ||
+                            !element.examId.lessonId.contentId ||
+                            !element.examId.lessonId.contentId.subjectId ||
+                            !element.examId.lessonId.contentId.subjectId.classId)
                             return ""
                         return element.examId.lessonId.contentId.subjectId.classId.name
                     },
@@ -446,12 +443,12 @@ router.get("/exams/users/:id/export", (req, res) => {
                 subjectName: {
                     headerStyle: { font: { bold: true } },
                     displayName: 'Môn học',
-                    cellFormat: function (value, element) {
-                        if (!element
-                            || !element.examId
-                            || !element.examId.lessonId
-                            || !element.examId.lessonId.contentId
-                            || !element.examId.lessonId.contentId.subjectId)
+                    cellFormat: function(value, element) {
+                        if (!element ||
+                            !element.examId ||
+                            !element.examId.lessonId ||
+                            !element.examId.lessonId.contentId ||
+                            !element.examId.lessonId.contentId.subjectId)
                             return ""
                         return element.examId.lessonId.contentId.subjectId.name
                     },
@@ -460,11 +457,11 @@ router.get("/exams/users/:id/export", (req, res) => {
                 contentName: {
                     headerStyle: { font: { bold: true } },
                     displayName: 'Chương',
-                    cellFormat: function (value, element) {
-                        if (!element
-                            || !element.examId
-                            || !element.examId.lessonId
-                            || !element.examId.lessonId.contentId)
+                    cellFormat: function(value, element) {
+                        if (!element ||
+                            !element.examId ||
+                            !element.examId.lessonId ||
+                            !element.examId.lessonId.contentId)
                             return ""
                         return element.examId.lessonId.contentId.name
                     },
@@ -473,10 +470,10 @@ router.get("/exams/users/:id/export", (req, res) => {
                 lessonName: {
                     headerStyle: { font: { bold: true } },
                     displayName: 'Bài',
-                    cellFormat: function (value, element) {
-                        if (!element
-                            || !element.examId
-                            || !element.examId.lessonId)
+                    cellFormat: function(value, element) {
+                        if (!element ||
+                            !element.examId ||
+                            !element.examId.lessonId)
                             return ""
                         return element.examId.lessonId.name
                     },
@@ -485,7 +482,7 @@ router.get("/exams/users/:id/export", (req, res) => {
                 time: {
                     headerStyle: { font: { bold: true } },
                     displayName: 'Thời gian',
-                    cellFormat: function (value, row) {
+                    cellFormat: function(value, row) {
                         return row.start
                     },
                     width: 400
@@ -493,7 +490,7 @@ router.get("/exams/users/:id/export", (req, res) => {
                 point: {
                     headerStyle: { font: { bold: true } },
                     displayName: 'Điểm',
-                    cellFormat: function (value, row) {
+                    cellFormat: function(value, row) {
                         return row.point
                     },
                     width: 50
@@ -526,7 +523,7 @@ router.get("/exam/:id", (req, res) => {
     if (req.authz.role == "anony") {
         return fail(res, "Vui lòng đăng nhập trước khi thực hiện")
     } else {
-        ExamModel.findById(req.params.id, "name time total datetime password answer package", (err, exam) => {
+        ExamModel.findById(req.params.id, "name time total datetime password answer plan", (err, exam) => {
             if (err) return error(res, err);
             if (!exam)
                 return fail(res, "Bài kiểm tra không tồn tài")
@@ -554,10 +551,10 @@ router.get("/exam/:id", (req, res) => {
                             exam._doc.status = null
 
                         AnswerModel.find({
-                            userId: new ObjectId(req.authz.uid),
-                            examId: new ObjectId(req.params.id),
-                            status: "done"
-                        })
+                                userId: new ObjectId(req.authz.uid),
+                                examId: new ObjectId(req.params.id),
+                                status: "done"
+                            })
                             .select("point _id status start")
                             .sort("-start")
                             .exec((err, answers) => {
@@ -567,8 +564,7 @@ router.get("/exam/:id", (req, res) => {
                                 return success(res, exam)
                             })
                     })
-                }
-                else {
+                } else {
                     pass = Math.round((Date.now() - answer.start) / 1000)
                     if (pass >= exam.time * 60) {
                         answer.end = Date.now()
@@ -587,10 +583,10 @@ router.get("/exam/:id", (req, res) => {
                             if (err) return error(res, err)
                             exam._doc.status = "done"
                             AnswerModel.find({
-                                userId: new ObjectId(req.authz.uid),
-                                examId: new ObjectId(req.params.id),
-                                status: "done"
-                            })
+                                    userId: new ObjectId(req.authz.uid),
+                                    examId: new ObjectId(req.params.id),
+                                    status: "done"
+                                })
                                 .select("point _id status start")
                                 .sort("-start")
                                 .exec((err, answers) => {
@@ -604,8 +600,7 @@ router.get("/exam/:id", (req, res) => {
                                             if (user.remain - exam.time <= 0) {
                                                 user.active = false
                                                 user.remain = 0
-                                            }
-                                            else {
+                                            } else {
                                                 user.active = true
                                                 user.remain = user.remain - exam.time
                                             }
@@ -615,8 +610,7 @@ router.get("/exam/:id", (req, res) => {
                                             })
 
                                         })
-                                    }
-                                    else
+                                    } else
                                         return success(res, exam)
                                 })
                         })
@@ -627,10 +621,10 @@ router.get("/exam/:id", (req, res) => {
                             if (err) return error(res, err)
                             exam._doc.status = "doing"
                             AnswerModel.find({
-                                userId: new ObjectId(req.authz.uid),
-                                examId: new ObjectId(req.params.id),
-                                status: "done"
-                            })
+                                    userId: new ObjectId(req.authz.uid),
+                                    examId: new ObjectId(req.params.id),
+                                    status: "done"
+                                })
                                 .select("point _id status start")
                                 .sort("-start")
                                 .exec((err, answers) => {
@@ -664,7 +658,7 @@ router.get("/exams/lessons/:id", (req, res) => {
     } : { lessonId: req.params.id }
 
     ExamModel.find(query)
-        .select("name datetime lessonId password userId package")
+        .select("name datetime lessonId password userId plan")
         .populate({
             path: 'lessonId',
             select: 'name contentId',
@@ -710,7 +704,7 @@ router.get("/exams/lessons/:id", (req, res) => {
                             password: (element.password) ? true : false,
                             userName: element.userId.name,
                             userEmail: element.userId.email,
-                            package: element.package
+                            plan: element.plan
                         }
                 })
                 data = { totalPage: totalPage, page: req.query.page, data: exams, previous: previous, next: next }
@@ -721,7 +715,7 @@ router.get("/exams/lessons/:id", (req, res) => {
 
 router.get("/examslectures/lessons/:id", (req, res) => {
     ExamModel.find({ lessonId: req.params.id })
-        .select("name datetime package")
+        .select("name datetime plan")
         .exec((err, exams) => {
             if (err) return error(res, err)
             if (!exams)
@@ -730,7 +724,7 @@ router.get("/examslectures/lessons/:id", (req, res) => {
                 element._doc.type = "exam"
             });
             LectureModel.find({ lessonId: req.params.id })
-                .select("name datetime password package")
+                .select("name datetime password plan")
                 .exec((err, lectures) => {
                     if (err) return error(res, err)
                     if (!lectures)
@@ -843,9 +837,9 @@ function getAnswerbyExam(req, res) {
         req.query.page = 1
 
     AnswerModel.find({
-        examId: new ObjectId(req.params.id),
-        status: "done"
-    })
+            examId: new ObjectId(req.params.id),
+            status: "done"
+        })
         .select("point start correct")
         .populate({
             path: "userId",
@@ -889,7 +883,7 @@ function getAnswerbyExam(req, res) {
         })
 }
 
-router.get("/answers/exams/:id", async (req, res) => {
+router.get("/answers/exams/:id", async(req, res) => {
     if (!["admin", "dean", "teacher"].includes(req.authz.role))
         return fail(res, "Chỉ admin có thể thực hiện")
 
@@ -928,8 +922,7 @@ router.get("/answers/exams/:id", async (req, res) => {
                                     if (user.remain - exam.time <= 0) {
                                         user.active = false
                                         user.remain = 0
-                                    }
-                                    else {
+                                    } else {
                                         user.active = true
                                         user.remain = user.remain - exam.time
                                     }
@@ -963,9 +956,9 @@ router.get("/answers/exams/:id/export", (req, res) => {
         return fail(res, "Không đủ quyền xuất báo cáo bài làm")
 
     AnswerModel.find({
-        examId: new ObjectId(req.params.id),
-        status: "done"
-    })
+            examId: new ObjectId(req.params.id),
+            status: "done"
+        })
         .select("point start correct")
         .populate({
             path: "userId",
@@ -985,7 +978,7 @@ router.get("/answers/exams/:id/export", (req, res) => {
                 name: {
                     headerStyle: { font: { bold: true } },
                     displayName: 'Tên',
-                    cellFormat: function (value, row) {
+                    cellFormat: function(value, row) {
                         return row.userId.name
                     },
                     width: 200
@@ -993,7 +986,7 @@ router.get("/answers/exams/:id/export", (req, res) => {
                 email: {
                     headerStyle: { font: { bold: true } },
                     displayName: 'Email',
-                    cellFormat: function (value, row) {
+                    cellFormat: function(value, row) {
                         return row.userId.email
                     },
                     width: 200
@@ -1001,7 +994,7 @@ router.get("/answers/exams/:id/export", (req, res) => {
                 time: {
                     headerStyle: { font: { bold: true } },
                     displayName: 'Thời gian',
-                    cellFormat: function (value, row) {
+                    cellFormat: function(value, row) {
                         return row.start
                     },
                     width: 400
@@ -1009,7 +1002,7 @@ router.get("/answers/exams/:id/export", (req, res) => {
                 correct: {
                     headerStyle: { font: { bold: true } },
                     displayName: 'Đúng/Tổng số',
-                    cellFormat: function (value, row) {
+                    cellFormat: function(value, row) {
                         return row.correct + "/" + row.examId.total
                     },
                     width: 120
@@ -1017,7 +1010,7 @@ router.get("/answers/exams/:id/export", (req, res) => {
                 point: {
                     headerStyle: { font: { bold: true } },
                     displayName: 'Điểm',
-                    cellFormat: function (value, row) {
+                    cellFormat: function(value, row) {
                         return row.point
                     },
                     width: 50
@@ -1037,12 +1030,12 @@ router.get("/answers/exams/:id/export", (req, res) => {
 router.post("/answers", (req, res) => {
     if (req.authz.role == "anony")
         return fail(res, "Vui lòng đăng nhập trước khi làm bài kiểm tra")
-    ExamModel.findById(req.body.examId, "name time examUrl password contentId total datetime package", (err, exam) => {
+    ExamModel.findById(req.body.examId, "name time examUrl password contentId total datetime plan", (err, exam) => {
         if (err) return error(res, err)
         if (!exam)
             return fail(res, "Bài kiểm tra không tồn tại")
-        if (exam.package == "fee")
-            if (req.authz.package != "fee")
+        if (exam.plan == "pro")
+            if (req.authz.plan != "pro")
                 return fail("Vui lòng nâng cấp tài khoản để thực hiện")
         if (exam.password) {
             if (!req.body.password)
@@ -1062,8 +1055,7 @@ router.post("/answers", (req, res) => {
                     answer: answers[0],
                     exam
                 })
-            }
-            else
+            } else
                 AnswerModel.create({
                     remain: exam.time,
                     answer: "",
@@ -1118,8 +1110,7 @@ router.put("/answers/:id", (req, res) => {
                             if (user.remain - exam.time / 60 <= 0) {
                                 user.active = false
                                 user.remain = 0
-                            }
-                            else {
+                            } else {
                                 user.active = true
                                 user.remain = user.remain - exam.time / 60
                             }
@@ -1134,8 +1125,7 @@ router.put("/answers/:id", (req, res) => {
                             })
 
                         })
-                    }
-                    else {
+                    } else {
                         return success(res, {
                             _id: req.params.id,
                             correct: req.body.correct,
