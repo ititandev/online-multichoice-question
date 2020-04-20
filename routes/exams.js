@@ -1036,7 +1036,7 @@ router.post("/answers", (req, res) => {
             return fail(res, "Bài kiểm tra không tồn tại")
         if (exam.plan == "pro")
             if (req.authz.plan != "pro")
-                return fail("Vui lòng nâng cấp tài khoản để thực hiện")
+                return fail(res, "Vui lòng nâng cấp tài khoản để thực hiện")
         if (exam.password) {
             if (!req.body.password)
                 return fail(res, "Vui lòng nhập mật khẩu bài kiểm tra")

@@ -96,7 +96,7 @@ router.post("/lectures/:id", (req, res) => {
             return fail(res, "Bài giảng không tồn tại")
         if (lecture.plan == "pro")
             if (req.authz.plan != "pro")
-                return fail("Vui lòng nâng cấp tài khoản để thực hiện")
+                return fail(res, "Vui lòng nâng cấp tài khoản để thực hiện")
         if (lecture.password)
             if (req.body.password != lecture.password)
                 return fail(res, "Sai mật khẩu")
