@@ -22,20 +22,20 @@ app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "jade");
 
 mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-  .catch(error => console.error("Error when connect to MONGODB"));
+    .catch(error => console.error("Error when connect to MONGODB"));
 
-app.use(function (req, res, next) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader(
-    "Access-Control-Allow-Methods",
-    "GET, POST, OPTIONS, PUT, PATCH, DELETE"
-  );
-  res.setHeader(
-    "Access-Control-Allow-Headers",
-    "Origin, X-Requested-With, Content-Type, Accept, Authorization"
-  );
-  res.setHeader("Access-Control-Allow-Credentials", true);
-  next();
+app.use(function(req, res, next) {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader(
+        "Access-Control-Allow-Methods",
+        "GET, POST, OPTIONS, PUT, PATCH, DELETE"
+    );
+    res.setHeader(
+        "Access-Control-Allow-Headers",
+        "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+    );
+    res.setHeader("Access-Control-Allow-Credentials", true);
+    next();
 });
 
 
@@ -45,23 +45,23 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 app.use(fileUpload({
-  useTempFiles : true,
-  tempFileDir : './upload/'
+    useTempFiles: true,
+    tempFileDir: './upload/'
 }));
 
 
 app.use((req, res, next) => {
-  verifyJWTToken(req.header("Authorization"))
-    .then(payload => {
-      if (!payload.role)
-        payload.role = "anony"
-      req.authz = payload
-      next();
-    })
-    .catch(err => {
-      req.authz = { role: "anony" }
-      next();
-    })
+    verifyJWTToken(req.header("Authorization"))
+        .then(payload => {
+            if (!payload.role)
+                payload.role = "anony"
+            req.authz = payload
+            next();
+        })
+        .catch(err => {
+            req.authz = { role: "anony" }
+            next();
+        })
 })
 
 // app.delete("/api/all", (req, res) => {
@@ -83,17 +83,17 @@ app.use("/api/", imageRouter);
 app.use("/api/", otherRouter);
 
 
-app.use(function (req, res, next) {
-  res.sendFile(__dirname + "/public/index.html");
+app.use(function(req, res, next) {
+    res.sendFile(__dirname + "/public/index.html");
 });
 
 
-app.use(function (err, req, res, next) {
-  res.locals.message = err.message;
-  res.locals.error = req.app.get("env") === "development" ? err : {};
+app.use(function(err, req, res, next) {
+    res.locals.message = err.message;
+    res.locals.error = req.app.get("env") === "development" ? err : {};
 
-  res.status(err.status || 500);
-  res.render("error");
+    res.status(err.status || 500);
+    res.render("error");
 });
 
 module.exports = app;
