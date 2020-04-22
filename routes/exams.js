@@ -1027,6 +1027,89 @@ router.get("/answers/exams/:id/export", (req, res) => {
         })
 })
 
+router.get("/answers/export", (req, res) => {
+    // if (!["admin", "dean"].includes(req.authz.role))
+    //     return fail(res, "Không đủ quyền xuất báo cáo bài làm toàn bộ hệ thống")
+
+    AnswerModel.find({
+            status: "done"
+        })
+        .select("point start correct")
+        .populate({
+            path: "userId",
+            select: "name email"
+        })
+        .populate({
+            path: "examId",
+            select: "total name"
+        })
+        .sort('-userId')
+        .exec((err, answers) => {
+            if (err) return error(res, err)
+            if (!answers || answers.length == 0)
+                return fail(res, "Đề thi chưa được làm lần nào")
+
+            const specification = {
+                name: {
+                    headerStyle: { font: { bold: true } },
+                    displayName: 'Tên',
+                    cellFormat: function(value, row) {
+                        return row.userId.name
+                    },
+                    width: 200
+                },
+                email: {
+                    headerStyle: { font: { bold: true } },
+                    displayName: 'Email',
+                    cellFormat: function(value, row) {
+                        return row.userId.email
+                    },
+                    width: 200
+                },
+                time: {
+                    headerStyle: { font: { bold: true } },
+                    displayName: 'Thời gian',
+                    cellFormat: function(value, row) {
+                        return row.start
+                    },
+                    width: 80
+                },
+                examName: {
+                    headerStyle: { font: { bold: true } },
+                    displayName: 'Đề thi',
+                    cellFormat: function(value, row) {
+                        return row.examId.name
+                    },
+                    width: 300
+                },
+                correct: {
+                    headerStyle: { font: { bold: true } },
+                    displayName: 'Đúng/Tổng số',
+                    cellFormat: function(value, row) {
+                        return row.correct + "/" + row.examId.total
+                    },
+                    width: 120
+                },
+                point: {
+                    headerStyle: { font: { bold: true } },
+                    displayName: 'Điểm',
+                    cellFormat: function(value, row) {
+                        return row.point
+                    },
+                    width: 50
+                }
+            }
+
+            const report = excel.buildExport([{
+                specification: specification,
+                data: answers
+            }]);
+
+            res.attachment("Thong ke bai lam toan bo he thong.xlsx");
+            return res.send(report);
+        })
+})
+
 router.post("/answers", (req, res) => {
     if (req.authz.role == "anony")
         return fail(res, "Vui lòng đăng nhập trước khi làm bài kiểm tra")
