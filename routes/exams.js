@@ -997,7 +997,7 @@ router.get("/answers/exams/:id/export", (req, res) => {
                     cellFormat: function(value, row) {
                         return row.start
                     },
-                    width: 400
+                    width: 80
                 },
                 correct: {
                     headerStyle: { font: { bold: true } },
@@ -1041,7 +1041,23 @@ router.get("/answers/export", (req, res) => {
         })
         .populate({
             path: "examId",
-            select: "total name"
+            select: "total name",
+            populate: {
+                path: 'lessonId',
+                select: 'name contentId',
+                populate: {
+                    path: 'contentId',
+                    select: 'name subjectId',
+                    populate: {
+                        path: 'subjectId',
+                        select: 'classId name',
+                        populate: {
+                            path: 'classId',
+                            select: 'name'
+                        }
+                    }
+                }
+            }
         })
         .sort('-userId')
         .exec((err, answers) => {
@@ -1074,9 +1090,41 @@ router.get("/answers/export", (req, res) => {
                     },
                     width: 80
                 },
+                className: {
+                    headerStyle: { font: { bold: true } },
+                    displayName: 'Lớp',
+                    cellFormat: function(value, row) {
+                        return row.examId.lessonId.contentId.subjectId.classId.name
+                    },
+                    width: 80
+                },
+                subjectName: {
+                    headerStyle: { font: { bold: true } },
+                    displayName: 'Môn',
+                    cellFormat: function(value, row) {
+                        return row.examId.lessonId.contentId.subjectId.name
+                    },
+                    width: 100
+                },
+                contentName: {
+                    headerStyle: { font: { bold: true } },
+                    displayName: 'Chương',
+                    cellFormat: function(value, row) {
+                        return row.examId.lessonId.contentId.name
+                    },
+                    width: 200
+                },
+                lessonName: {
+                    headerStyle: { font: { bold: true } },
+                    displayName: 'Bài',
+                    cellFormat: function(value, row) {
+                        return row.examId.lessonId.name
+                    },
+                    width: 300
+                },
                 examName: {
                     headerStyle: { font: { bold: true } },
-                    displayName: 'Đề thi',
+                    displayName: 'Tên đề',
                     cellFormat: function(value, row) {
                         return row.examId.name
                     },
