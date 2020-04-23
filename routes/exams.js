@@ -1028,8 +1028,8 @@ router.get("/answers/exams/:id/export", (req, res) => {
 })
 
 router.get("/answers/export", (req, res) => {
-    // if (!["admin", "dean"].includes(req.authz.role))
-    //     return fail(res, "Không đủ quyền xuất báo cáo bài làm toàn bộ hệ thống")
+    if (!["admin", "dean"].includes(req.authz.role))
+        return fail(res, "Không đủ quyền xuất báo cáo bài làm toàn bộ hệ thống")
 
     AnswerModel.find({
             status: "done"
@@ -1274,6 +1274,20 @@ router.put("/answers/:id", (req, res) => {
             })
         }
     })
+})
+
+router.get("/statistic", async(req, res) => {
+    if (!["admin", "dean"].includes(req.authz.role))
+        return fail(res, "Không đủ quyền xuất thống kê hệ thống")
+    try {
+        const examCount = await ExamModel.countDocuments({})
+        const lectureCount = await LectureModel.countDocuments({})
+        const answerCount = await AnswerModel.countDocuments({})
+        const userCount = await UserModel.countDocuments({})
+        return success(res, { examCount, lectureCount, answerCount, userCount })
+    } catch (err) {
+        error(res, err)
+    }
 })
 
 module.exports = router;
