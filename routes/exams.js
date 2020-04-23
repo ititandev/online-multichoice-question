@@ -1277,8 +1277,8 @@ router.put("/answers/:id", (req, res) => {
 })
 
 router.get("/statistic", async(req, res) => {
-    // if (!["admin", "dean"].includes(req.authz.role))
-    //     return fail(res, "Không đủ quyền xuất thống kê hệ thống")
+    if (!["admin", "dean"].includes(req.authz.role))
+        return fail(res, "Không đủ quyền xuất thống kê hệ thống")
     try {
         const examCount = await ExamModel.countDocuments({})
         const lectureCount = await LectureModel.countDocuments({})
