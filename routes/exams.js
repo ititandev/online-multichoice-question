@@ -1277,13 +1277,35 @@ router.put("/answers/:id", (req, res) => {
 })
 
 router.get("/statistic", async(req, res) => {
-    if (!["admin", "dean"].includes(req.authz.role))
-        return fail(res, "Không đủ quyền xuất thống kê hệ thống")
+    // if (!["admin", "dean"].includes(req.authz.role))
+    //     return fail(res, "Không đủ quyền xuất thống kê hệ thống")
     try {
         const examCount = await ExamModel.countDocuments({})
         const lectureCount = await LectureModel.countDocuments({})
         const answerCount = await AnswerModel.countDocuments({})
         const userCount = await UserModel.countDocuments({})
+
+        // const answerByDateCount = await AnswerModel.aggregate(
+        //     [{
+        //         "$match": {
+        //             "start": {
+        //                 "$gte": new Date("2020-01-01"),
+        //                 "$lt": new Date("2020-06-01")
+        //             }
+        //         }
+        //     },
+        //     {
+        //         "$group": {
+        //             "_id": {
+        //                 "year": { "$year": "$start" },
+        //                 "month": { "$month": "$start" },
+        //                 "day": { "$dayOfMonth": "$start" }
+        //             },
+        //             "count": { "$sum": 1 }
+        //         }
+        //     }
+        //     ]
+        // )
         return success(res, { examCount, lectureCount, answerCount, userCount })
     } catch (err) {
         error(res, err)
