@@ -1031,8 +1031,17 @@ router.get("/answers/export", (req, res) => {
     if (!["admin", "dean"].includes(req.authz.role))
         return fail(res, "Không đủ quyền xuất báo cáo bài làm toàn bộ hệ thống")
 
+    if (req.query.start)
+        startDate = new Date(req.query.start)
+    else {
+        startDate = new Date()
+        startDate.setMonth(startDate.getMonth() - 1)
+    }
+    endDate = req.query.end ? new Date(req.query.end) : new Date()
+
     AnswerModel.find({
-            status: "done"
+            status: "done",
+            start: { $gte: startDate, $lte: endDate }
         })
         .select("point start correct")
         .populate({
@@ -1153,7 +1162,7 @@ router.get("/answers/export", (req, res) => {
                 data: answers
             }]);
 
-            res.attachment("Thong ke bai lam toan bo he thong.xlsx");
+            res.attachment("Thong ke bai lam tu " + startDate.toISOString().split('T')[0] + " toi " + endDate.toISOString().split('T')[0] + ".xlsx");
             return res.send(report);
         })
 })
@@ -1285,28 +1294,52 @@ router.get("/statistic", async(req, res) => {
         const answerCount = await AnswerModel.countDocuments({})
         const userCount = await UserModel.countDocuments({})
 
-        // const answerByDateCount = await AnswerModel.aggregate(
-        //     [{
-        //         "$match": {
-        //             "start": {
-        //                 "$gte": new Date("2020-01-01"),
-        //                 "$lt": new Date("2020-06-01")
-        //             }
-        //         }
-        //     },
-        //     {
-        //         "$group": {
-        //             "_id": {
-        //                 "year": { "$year": "$start" },
-        //                 "month": { "$month": "$start" },
-        //                 "day": { "$dayOfMonth": "$start" }
-        //             },
-        //             "count": { "$sum": 1 }
-        //         }
-        //     }
-        //     ]
-        // )
         return success(res, { examCount, lectureCount, answerCount, userCount })
+    } catch (err) {
+        error(res, err)
+    }
+})
+
+router.get("/statistic/date", async(req, res) => {
+    if (!["admin", "dean"].includes(req.authz.role))
+        return fail(res, "Không đủ quyền xuất thống kê hệ thống")
+
+    if (req.query.start)
+        startDate = new Date(req.query.start)
+    else {
+        startDate = new Date()
+        startDate.setMonth(startDate.getMonth() - 1)
+    }
+    endDate = req.query.end ? new Date(req.query.end) : new Date()
+
+    try {
+        const answerByDateCount = await AnswerModel.aggregate(
+            [{
+                    "$match": {
+                        "start": {
+                            "$gte": startDate,
+                            "$lte": endDate
+                        }
+                    }
+                },
+
+                {
+                    "$group": {
+                        "_id": {
+                            "year": { "$year": "$start" },
+                            "month": { "$month": "$start" },
+                            "day": { "$dayOfMonth": "$start" }
+                        },
+                        "date": { "$first": "$start" },
+                        "count": { "$sum": 1 }
+                    }
+                },
+                {
+                    "$sort": { "date": 1 }
+                },
+            ]
+        )
+        return success(res, { answerByDateCount })
     } catch (err) {
         error(res, err)
     }
