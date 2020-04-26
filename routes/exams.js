@@ -1038,6 +1038,7 @@ router.get("/answers/export", (req, res) => {
         startDate.setMonth(startDate.getMonth() - 1)
     }
     endDate = req.query.end ? new Date(req.query.end) : new Date()
+    endDate.setDate(endDate.getDate() + 1)
 
     AnswerModel.find({
             status: "done",
@@ -1072,7 +1073,7 @@ router.get("/answers/export", (req, res) => {
         .exec((err, answers) => {
             if (err) return error(res, err)
             if (!answers || answers.length == 0)
-                return fail(res, "Đề thi chưa được làm lần nào")
+                return fail(res, "Không có lần làm bài nào")
 
             const specification = {
                 name: {
@@ -1311,6 +1312,7 @@ router.get("/statistic/date", async(req, res) => {
         startDate.setMonth(startDate.getMonth() - 1)
     }
     endDate = req.query.end ? new Date(req.query.end) : new Date()
+    endDate.setDate(endDate.getDate() + 1)
 
     try {
         const answerByDateCount = await AnswerModel.aggregate(
