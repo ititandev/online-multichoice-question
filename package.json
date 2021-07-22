@@ -32,7 +32,7 @@
     "nodejs-nodemailer-outlook": "^1.2.3",
     "nodemon": "^1.19.0",
     "read-excel-file": "^4.0.5",
-    "xlsx": "^0.15.4"
+    "xlsx": "^0.17.0"
   },
   "nodemonConfig": {
     "restartable": "rs",
