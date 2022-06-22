@@ -10,7 +10,7 @@
     "preinstall": "npm install pm2 -g"
   },
   "dependencies": {
-    "async": "^3.0.0",
+    "async": "^3.2.2",
     "bcrypt": "^3.0.6",
     "body-parser": "^1.19.0",
     "cookie-parser": "~1.4.3",
